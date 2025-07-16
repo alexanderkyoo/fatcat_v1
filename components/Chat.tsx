@@ -16,7 +16,7 @@ export default function ClientComponent({
   const ref = useRef<ComponentRef<typeof Messages> | null>(null);
 
   // optional: use configId from environment variable
-  const configId = '6d313f37-6191-48db-b426-e2eeb8d0ea36';
+  const configId = process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
   
   return (
     <div
