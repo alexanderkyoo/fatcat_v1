@@ -4,7 +4,6 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { cn } from "@/utils";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Chili's FatCat",
@@ -25,15 +24,8 @@ export default function RootLayout({
           "flex flex-col min-h-screen"
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
           {children}
           <Toaster position="top-center" richColors={true} />
-        </ThemeProvider>
       </body>
     </html>
   );
