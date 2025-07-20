@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { cn } from "@/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/contexts/CartContext";
 
 export const metadata: Metadata = {
   title: "Chili's FatCat",
@@ -24,8 +25,10 @@ export default function RootLayout({
           "flex flex-col min-h-screen"
         )}
       >
+        <CartProvider>
           {children}
           <Toaster position="top-center" richColors={true} />
+        </CartProvider>
       </body>
     </html>
   );

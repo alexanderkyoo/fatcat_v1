@@ -1,11 +1,13 @@
 "use client";
 
-import { VoiceProvider, ToolCallHandler } from "@humeai/voice-react";
+import { VoiceProvider, ToolCallHandler, useVoice } from "@humeai/voice-react";
 import Messages from "./Messages";
 import Controls from "./Controls";
 import StartCall from "./StartCall";
-import { ComponentRef, useRef } from "react";
+import Cart from "./Cart";
+import { ComponentRef, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { useCart } from "@/contexts/CartContext";
 
 type ToolMeta = {
   endpoint: string;
@@ -25,6 +27,24 @@ const tools: Record<string, ToolMeta> = {
       code: "weather_tool_error",
       level: "warn",
       content: "There was an error with the weather tool",
+    },
+  },
+  add_to_cart: {
+    endpoint: "/api/addToCart",
+    error: {
+      error: "Cart tool error",
+      code: "cart_tool_error",
+      level: "warn",
+      content: "There was an error adding item to cart",
+    },
+  },
+  remove_from_cart: {
+    endpoint: "/api/removeFromCart",
+    error: {
+      error: "Cart tool error",
+      code: "cart_tool_error",
+      level: "warn",
+      content: "There was an error removing item from cart",
     },
   },
 };
