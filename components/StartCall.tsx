@@ -1,11 +1,16 @@
-import { useVoice } from "@humeai/voice-react";
-import { AnimatePresence, motion } from "motion/react";
+import { ConnectOptions, useVoice } from "@humeai/voice-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { Phone } from "lucide-react";
 import { toast } from "sonner";
 
-export default function StartCall({ configId, accessToken }: { configId?: string, accessToken: string }) {
+export default function StartCall({ accessToken }: { accessToken: string }) {
   const { status, connect } = useVoice();
+
+  const EVI_CONNECT_OPTIONS: ConnectOptions = {
+    auth: { type: "accessToken", value: accessToken },
+    configId: process.env.NEXT_PUBLIC_HUME_CONFIG_ID,
+  };
 
   return (
     <AnimatePresence>
@@ -30,14 +35,9 @@ export default function StartCall({ configId, accessToken }: { configId?: string
               }}
             >
               <Button
-                className={"z-50 flex items-center gap-1.5 rounded-full"}
+                className={"z-50 flex items-center gap-1.5"}
                 onClick={() => {
-                  connect({ 
-                    auth: { type: "accessToken", value: accessToken },
-                    configId, 
-                    // additional options can be added here
-                    // like resumedChatGroupId and sessionSettings
-                  })
+                  connect(EVI_CONNECT_OPTIONS)
                     .then(() => {})
                     .catch(() => {
                       toast.error("Unable to start call");
@@ -47,8 +47,9 @@ export default function StartCall({ configId, accessToken }: { configId?: string
               >
                 <span>
                   <Phone
-                    className={"size-4 opacity-50 fill-current"}
-                    strokeWidth={0}
+                    className={"size-4 opacity-50"}
+                    strokeWidth={2}
+                    stroke={"currentColor"}
                   />
                 </span>
                 <span>Start Call</span>

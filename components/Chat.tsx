@@ -1,11 +1,61 @@
 "use client";
 
-import { VoiceProvider } from "@humeai/voice-react";
+import { VoiceProvider, ToolCallHandler } from "@humeai/voice-react";
 import Messages from "./Messages";
 import Controls from "./Controls";
 import StartCall from "./StartCall";
 import { ComponentRef, useRef } from "react";
 import { toast } from "sonner";
+
+type ToolMeta = {
+  endpoint: string;
+  error: {
+    error: string;
+    code: string;
+    level: "warn" | "error";
+    content: string;
+  };
+};
+
+const tools: Record<string, ToolMeta> = {
+  get_current_weather: {
+    endpoint: "/api/fetchWeather",
+    error: {
+      error: "Weather tool error",
+      code: "weather_tool_error",
+      level: "warn",
+      content: "There was an error with the weather tool",
+    },
+  },
+};
+
+const handleToolCall: ToolCallHandler = async (message, send) => {
+  const tool = tools[message.name];
+
+  if (!tool) {
+    return send.error({
+      error: "Tool not found",
+      code: "tool_not_found",
+      level: "warn",
+      content: "The tool you requested was not found",
+    });
+  }
+
+  try {
+    const response = await fetch(tool.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ parameters: message.parameters }),
+    });
+
+    const result = await response.json();
+    return result.success
+      ? send.success(result.data)
+      : send.error(result.error);
+  } catch (err) {
+    return send.error(tool.error);
+  }
+};
 
 export default function ClientComponent({
   accessToken,
@@ -14,9 +64,6 @@ export default function ClientComponent({
 }) {
   const timeout = useRef<number | null>(null);
   const ref = useRef<ComponentRef<typeof Messages> | null>(null);
-
-  // optional: use configId from environment variable
-  const configId = process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
   
   return (
     <div
@@ -25,7 +72,10 @@ export default function ClientComponent({
       }
     >
       <VoiceProvider
-        onMessage={() => {
+        onToolCall={handleToolCall}
+        onMessage={(message) => {
+          console.log('Received message:', message); // Debug logging
+          
           if (timeout.current) {
             window.clearTimeout(timeout.current);
           }
@@ -42,12 +92,13 @@ export default function ClientComponent({
           }, 200);
         }}
         onError={(error) => {
+          console.error('Voice error:', error); // Debug logging
           toast.error(error.message);
         }}
       >
         <Messages ref={ref} />
         <Controls />
-        <StartCall configId={configId} accessToken={accessToken} />
+        <StartCall accessToken={accessToken} />
       </VoiceProvider>
     </div>
   );
