@@ -1,11 +1,13 @@
 "use client";
 
 import { VoiceProvider, ToolCallHandler, useVoice } from "@humeai/voice-react";
-import Messages from "./Messages";
+import SuggestedMessages from "./SuggestedMessages";
 import Controls from "./Controls";
 import StartCall from "./StartCall";
 import Cart from "./Cart";
-import { ComponentRef, useRef, useEffect } from "react";
+import Menu from "./Menu";
+import ResizableBar from "./ResizableBar";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 
@@ -50,10 +52,10 @@ const tools: Record<string, ToolMeta> = {
 };
 
 function ChatContent({ accessToken }: { accessToken: string }) {
-  const timeout = useRef<number | null>(null);
-  const ref = useRef<ComponentRef<typeof Messages> | null>(null);
   const { status } = useVoice();
   const { addItem, removeItem, clearCart, items, updateQuantity } = useCart();
+  const [topSectionHeight, setTopSectionHeight] = useState(50); // Default 50%
+  const [showCart, setShowCart] = useState(false); // Show menu by default
 
   // Clear cart when call ends
   useEffect(() => {
@@ -62,6 +64,16 @@ function ChatContent({ accessToken }: { accessToken: string }) {
       toast.info("Cart cleared - call ended");
     }
   }, [status.value, clearCart, items.length]);
+
+  // Listen for showCart events from Menu component
+  useEffect(() => {
+    const handleShowCart = () => {
+      setShowCart(true);
+    };
+
+    window.addEventListener('showCart', handleShowCart);
+    return () => window.removeEventListener('showCart', handleShowCart);
+  }, []);
 
   const handleToolCall: ToolCallHandler = async (message, send) => {
     const tool = tools[message.name];
@@ -121,24 +133,57 @@ function ChatContent({ accessToken }: { accessToken: string }) {
   const isConnected = status.value === "connected";
 
   return (
-    <div className="relative grow flex mx-auto w-full overflow-hidden h-[0px]">
+    <div className="relative grow flex flex-col mx-auto w-full overflow-hidden h-[0px]">
       {isConnected ? (
-        // Split screen layout when connected
-        <div className="flex w-full h-full">
-          {/* Left side - Chat */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <Messages ref={ref} />
-            <Controls />
+        // Layout when connected with resizable sections
+        <div className="flex flex-col w-full h-full overflow-hidden">
+          {/* Top section - Controls and Suggestions */}
+          <div 
+            className="flex flex-col overflow-hidden bg-white"
+            style={{ height: `${topSectionHeight}%` }}
+          >
+            {/* Controls area */}
+            <div className="flex items-start justify-center bg-card border-b border-gray-200 p-4 pt-2">
+              <Controls />
+            </div>
+            {/* Suggestions area */}
+            <div className="flex-1 p-2 sm:p-4 overflow-auto">
+              <SuggestedMessages />
+            </div>
           </div>
-          {/* Right side - Cart */}
-          <div className="w-96 border-l border-gray-200 bg-white">
-            <Cart />
+
+          {/* Resizable bar */}
+          <ResizableBar onResize={setTopSectionHeight} />
+          
+          {/* Bottom section - Menu/Cart */}
+          <div 
+            className="flex flex-col overflow-hidden bg-gray-50"
+            style={{ height: `${100 - topSectionHeight}%` }}
+          >
+            {showCart ? (
+              <div className="h-full flex flex-col">
+                {/* Cart Header with Back Button */}
+                <div className="flex items-center p-4 border-b border-gray-200 bg-white">
+                  <button
+                    onClick={() => setShowCart(false)}
+                    className="text-orange-500 hover:text-orange-600 font-medium"
+                  >
+                    ← Back to Menu
+                  </button>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <Cart />
+                </div>
+              </div>
+            ) : (
+              <Menu />
+            )}
           </div>
         </div>
       ) : (
         // Full screen chat when not connected
         <div className="flex flex-col w-full h-full overflow-hidden">
-          <Messages ref={ref} />
+          <SuggestedMessages />
           <Controls />
         </div>
       )}
@@ -152,8 +197,6 @@ export default function ClientComponent({
 }: {
   accessToken: string;
 }) {
-  const timeout = useRef<number | null>(null);
-  const ref = useRef<ComponentRef<typeof Messages> | null>(null);
 
   const handleToolCall: ToolCallHandler = async (message, send) => {
     const tool = tools[message.name];
@@ -188,21 +231,6 @@ export default function ClientComponent({
       onToolCall={handleToolCall}
       onMessage={(message) => {
         console.log('Received message:', message);
-        
-        if (timeout.current) {
-          window.clearTimeout(timeout.current);
-        }
-
-        timeout.current = window.setTimeout(() => {
-          if (ref.current) {
-            const scrollHeight = ref.current.scrollHeight;
-
-            ref.current.scrollTo({
-              top: scrollHeight,
-              behavior: "smooth",
-            });
-          }
-        }, 200);
       }}
       onError={(error) => {
         console.error('Voice error:', error);

@@ -1,11 +1,11 @@
 "use client";
 
 import { VoiceProvider, ToolCallHandler, useVoice } from "@humeai/voice-react";
-import Messages from "./Messages";
+import SuggestedMessages from "./SuggestedMessages";
 import Controls from "./Controls";
 import StartCall from "./StartCall";
 import Cart from "./Cart";
-import { ComponentRef, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 
@@ -82,8 +82,6 @@ export default function ClientComponent({
 }: {
   accessToken: string;
 }) {
-  const timeout = useRef<number | null>(null);
-  const ref = useRef<ComponentRef<typeof Messages> | null>(null);
   
   return (
     <div
@@ -95,29 +93,16 @@ export default function ClientComponent({
         onToolCall={handleToolCall}
         onMessage={(message) => {
           console.log('Received message:', message); // Debug logging
-          
-          if (timeout.current) {
-            window.clearTimeout(timeout.current);
-          }
-
-          timeout.current = window.setTimeout(() => {
-            if (ref.current) {
-              const scrollHeight = ref.current.scrollHeight;
-
-              ref.current.scrollTo({
-                top: scrollHeight,
-                behavior: "smooth",
-              });
-            }
-          }, 200);
         }}
         onError={(error) => {
           console.error('Voice error:', error); // Debug logging
           toast.error(error.message);
         }}
       >
-        <Messages ref={ref} />
-        <Controls />
+        <div className="flex flex-col w-full h-full overflow-hidden">
+          <SuggestedMessages />
+          <Controls />
+        </div>
         <StartCall accessToken={accessToken} />
       </VoiceProvider>
     </div>

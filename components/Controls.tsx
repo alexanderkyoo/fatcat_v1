@@ -14,8 +14,8 @@ export default function Controls() {
     <div
       className={
         cn(
-          "fixed bottom-0 left-0 w-full p-4 pb-6 flex items-center justify-center",
-          "bg-gradient-to-t from-card via-card/90 to-card/0",
+          "flex items-center justify-center",
+          "bg-card",
         )
       }
     >
