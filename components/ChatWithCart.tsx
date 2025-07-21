@@ -31,6 +31,15 @@ const tools: Record<string, ToolMeta> = {
       content: "There was an error with the weather tool",
     },
   },
+  get_menu: {
+    endpoint: "/api/getMenu",
+    error: {
+      error: "Menu tool error",
+      code: "menu_tool_error",
+      level: "warn",
+      content: "There was an error retrieving menu information",
+    },
+  },
   add_to_cart: {
     endpoint: "/api/addToCart",
     error: {

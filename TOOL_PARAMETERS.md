@@ -70,7 +70,37 @@ This document provides the tool parameters that should be configured in your Hum
 - "Take out 1 fries from my order"
 - "Remove all the chicken sandwiches"
 
-### 3. Get Current Weather Tool (Already Configured)
+### 3. Get Menu Tool
+
+**Tool Name:** `get_menu`
+
+**Description:** Retrieves menu information from FatCat Bistro. Can get all menu items, items by category, or search for specific items.
+
+**Parameters Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "Optional: Filter by menu category (appetizers, main courses, desserts, beverages)"
+    },
+    "itemName": {
+      "type": "string",
+      "description": "Optional: Search for a specific menu item by name"
+    }
+  },
+  "required": []
+}
+```
+
+**Example Usage:**
+- "What's on the menu?" (returns full menu)
+- "Show me the appetizers" (returns appetizers category)
+- "Do you have buffalo wings?" (searches for specific item)
+- "What desserts do you have?" (returns desserts category)
+
+### 4. Get Current Weather Tool (Already Configured)
 
 **Tool Name:** `get_current_weather`
 
@@ -128,25 +158,43 @@ Here are some sample menu items the LLM can use when customers ask to add items:
 
 The LLM should be instructed to:
 
-1. **Proactively suggest menu items** when customers express interest in ordering
-2. **Use realistic prices** from the sample menu or similar restaurant pricing
-3. **Confirm orders** by reading back what was added to the cart
-4. **Handle modifications** by removing and re-adding items with new specifications
-5. **Provide helpful descriptions** when adding items to enhance the customer experience
+1. **Use the get_menu tool** to retrieve current menu information instead of relying on hardcoded items
+2. **Proactively suggest menu items** when customers express interest in ordering
+3. **Search for specific items** when customers ask about availability using the get_menu tool
+4. **Show category options** when customers ask "what do you have" or similar questions
+5. **Use exact prices and descriptions** from the menu.json file via the get_menu tool
+6. **Confirm orders** by reading back what was added to the cart
+7. **Handle modifications** by removing and re-adding items with new specifications
+8. **Provide helpful descriptions** when adding items to enhance the customer experience
+
+### Menu Tool Usage Guidelines
+
+- **When customer asks "What's on the menu?"** → Use `get_menu` with no parameters to get full menu
+- **When customer asks "What appetizers do you have?"** → Use `get_menu` with `{"category": "appetizers"}`
+- **When customer asks "Do you have buffalo wings?"** → Use `get_menu` with `{"itemName": "buffalo wings"}`
+- **When customer asks about a category** → Use `get_menu` with the appropriate category parameter
+- **Always use the exact item names, prices, and descriptions** returned by the get_menu tool when adding items to cart
 
 ## Example Conversation Flow
 
-**Customer:** "I'd like to order some food"
+**Customer:** "What's on the menu?"
 
-**Assistant:** "Great! I'd be happy to help you order. We have delicious burgers, chicken dishes, appetizers, and more. What sounds good to you today?"
+**Assistant:** *Uses get_menu tool with no parameters*
 
-**Customer:** "I'll take a burger and fries"
+**Assistant:** "Welcome to FatCat Bistro! We serve delicious comfort food with a modern twist. We have 8 items across 4 categories: appetizers, main courses, desserts, beverages. Our appetizers include Buffalo Wings, Loaded Nachos, and Mozzarella Sticks. For main courses, we have the FatCat Burger, Creamy Alfredo Pasta, and Ribeye Steak. What sounds good to you?"
 
-**Assistant:** *Uses add_to_cart tool twice*
-- First call: `{"name": "Oldtimer Burger", "price": 12.99, "quantity": 1, "description": "Classic burger with lettuce, tomato, onion, and pickles"}`
-- Second call: `{"name": "Awesome Fries", "price": 3.49, "quantity": 1, "description": "Seasoned french fries"}`
+**Customer:** "Do you have buffalo wings?"
 
-**Assistant:** "Perfect! I've added an Oldtimer Burger for $12.99 and Awesome Fries for $3.49 to your cart. Your current total is $16.48. Would you like anything else?"
+**Assistant:** *Uses get_menu tool with {"itemName": "buffalo wings"}*
+
+**Assistant:** "Yes! We have Buffalo Wings in our appetizers section. They're crispy chicken wings tossed in our signature buffalo sauce for $12.99. Would you like to add them to your cart?"
+
+**Customer:** "Yes, I'll take the buffalo wings"
+
+**Assistant:** *Uses add_to_cart tool*
+- Call: `{"name": "Buffalo Wings", "price": 12.99, "quantity": 1, "description": "Crispy chicken wings tossed in our signature buffalo sauce"}`
+
+**Assistant:** "Perfect! I've added Buffalo Wings for $12.99 to your cart. Would you like anything else?"
 
 ## Environment Variables Required
 
