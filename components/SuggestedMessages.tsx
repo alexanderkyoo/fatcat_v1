@@ -103,10 +103,10 @@ export default function SuggestedMessages() {
                 <Button
                   onClick={() => handleSuggestionClick(suggestion)}
                   disabled={!isConnected}
-                  variant="outline"
+                  variant="secondary"
                   className={cn(
                     "w-full p-3 sm:p-4 h-auto justify-start text-left transition-all duration-200",
-                    "hover:shadow-sm hover:bg-gray-50 active:scale-[0.99]",
+                    "border border-gray-200 bg-white hover:bg-gray-50 hover:shadow-sm active:scale-[0.99]",
                     !isConnected && "opacity-50 cursor-not-allowed"
                   )}
                 >
