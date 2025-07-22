@@ -114,7 +114,6 @@ function ChatContent({ accessToken }: { accessToken: string }) {
             price: result.item.price,
             quantity: result.item.quantity,
             description: result.item.description,
-            selectedOptions: result.item.selectedOptions,
             category: result.item.category,
           });
           
