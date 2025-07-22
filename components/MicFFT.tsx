@@ -1,38 +1,45 @@
-import React from 'react';
+"use client";
 
-interface MicFFTProps {
+import { cn } from "@/utils";
+import { motion } from "motion/react";
+import { AutoSizer } from "react-virtualized";
+
+export default function MicFFT({
+  fft,
+  className,
+}: {
   fft: number[];
   className?: string;
-}
-
-export default function MicFFT({ fft, className }: MicFFTProps) {
+}) {
   return (
-    <div className={`flex items-center justify-center h-full ${className || ''}`}>
-      <div className="flex items-end gap-1 h-6">
-        {fft?.slice(0, 20).map((value, index) => (
-          <div
-            key={index}
-            className="bg-current opacity-70"
-            style={{
-              width: '2px',
-              height: `${Math.max(2, value * 24)}px`,
-              transition: 'height 0.1s ease',
-            }}
-          />
-        )) || (
-          // Fallback when no FFT data
-          Array.from({ length: 20 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-current opacity-30"
-              style={{
-                width: '2px',
-                height: '2px',
-              }}
-            />
-          ))
+    <div className={"relative size-full"}>
+      <AutoSizer>
+        {({ width, height }) => (
+          <motion.svg
+            viewBox={`0 0 ${width} ${height}`}
+            width={width}
+            height={height}
+            className={cn("absolute !inset-0 !size-full", className)}
+          >
+            {Array.from({ length: 24 }).map((_, index) => {
+              const value = (fft[index] ?? 0) / 4;
+              const h = Math.min(Math.max(height * value, 2), height);
+              const yOffset = height * 0.5 - h * 0.5;
+
+              return (
+                <motion.rect
+                  key={`mic-fft-${index}`}
+                  height={h}
+                  width={2}
+                  x={2 + (index * width - 4) / 24}
+                  y={yOffset}
+                  rx={4}
+                />
+              );
+            })}
+          </motion.svg>
         )}
-      </div>
+      </AutoSizer>
     </div>
   );
 }

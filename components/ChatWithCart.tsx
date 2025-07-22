@@ -22,6 +22,15 @@ type ToolMeta = {
 };
 
 const tools: Record<string, ToolMeta> = {
+  get_current_weather: {
+    endpoint: "/api/fetchWeather",
+    error: {
+      error: "Weather tool error",
+      code: "weather_tool_error",
+      level: "warn",
+      content: "There was an error with the weather tool",
+    },
+  },
   get_menu: {
     endpoint: "/api/getMenu",
     error: {
@@ -53,7 +62,7 @@ const tools: Record<string, ToolMeta> = {
 
 function ChatContent({ accessToken }: { accessToken: string }) {
   const { status } = useVoice();
-  const { clearCart, items } = useCart();
+  const { addItem, removeItem, clearCart, items, updateQuantity } = useCart();
   const [topSectionHeight, setTopSectionHeight] = useState(50); // Default 50%
   const [showCart, setShowCart] = useState(false); // Show menu by default
 
@@ -74,6 +83,80 @@ function ChatContent({ accessToken }: { accessToken: string }) {
     window.addEventListener('showCart', handleShowCart);
     return () => window.removeEventListener('showCart', handleShowCart);
   }, []);
+
+  const handleToolCall: ToolCallHandler = async (message, send) => {
+    const tool = tools[message.name];
+
+    if (!tool) {
+      return send.error({
+        error: "Tool not found",
+        code: "tool_not_found",
+        level: "warn",
+        content: "The tool you requested was not found",
+      });
+    }
+
+    try {
+      const response = await fetch(tool.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ parameters: message.parameters }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Handle cart operations
+        if (message.name === "add_to_cart" && result.item) {
+          addItem({
+            menuItemId: result.item.id,
+            name: result.item.name,
+            price: result.item.price,
+            quantity: result.item.quantity,
+            description: result.item.description,
+            selectedOptions: result.item.selectedOptions,
+            category: result.item.category,
+          });
+          
+          // Show success toast and switch to cart view
+          toast.success(`Added ${result.item.name} to cart!`);
+          setShowCart(true);
+          
+        } else if (message.name === "remove_from_cart" && result.item) {
+          // Find item by menuItemId first, then by name
+          let existingItem = null;
+          
+          if (result.item.id) {
+            // Try to find by menuItemId (preferred)
+            existingItem = items.find(item => item.menuItemId === result.item.id);
+          }
+          
+          if (!existingItem) {
+            // Fallback to name-based search
+            existingItem = items.find(item => 
+              item.name.toLowerCase() === result.item.name.toLowerCase()
+            );
+          }
+          
+          if (existingItem) {
+            if (result.item.quantity >= existingItem.quantity) {
+              removeItem(existingItem.id);
+            } else {
+              // Reduce quantity
+              const newQuantity = existingItem.quantity - result.item.quantity;
+              updateQuantity(existingItem.id, newQuantity);
+            }
+          }
+        }
+        
+        return send.success(result.data);
+      } else {
+        return send.error(result.error);
+      }
+    } catch (err) {
+      return send.error(tool.error);
+    }
+  };
 
   const isConnected = status.value === "connected";
 
@@ -142,7 +225,6 @@ export default function ClientComponent({
 }: {
   accessToken: string;
 }) {
-  const { addItem, removeItem, clearCart, items, updateQuantity } = useCart();
 
   const handleToolCall: ToolCallHandler = async (message, send) => {
     const tool = tools[message.name];
@@ -164,53 +246,9 @@ export default function ClientComponent({
       });
 
       const result = await response.json();
-      
-      if (result.success) {
-        // Handle cart operations
-        if (message.name === "add_to_cart" && result.item) {
-          addItem({
-            menuItemId: result.item.id,
-            name: result.item.name,
-            price: result.item.price,
-            quantity: result.item.quantity,
-            description: result.item.description,
-            category: result.item.category,
-          });
-          
-          // Show success toast
-          toast.success(`Added ${result.item.name} to cart!`);
-          
-        } else if (message.name === "remove_from_cart" && result.item) {
-          // Find item by menuItemId first, then by name
-          let existingItem = null;
-          
-          if (result.item.id) {
-            // Try to find by menuItemId (preferred)
-            existingItem = items.find(item => item.menuItemId === result.item.id);
-          }
-          
-          if (!existingItem) {
-            // Fallback to name-based search
-            existingItem = items.find(item => 
-              item.name.toLowerCase() === result.item.name.toLowerCase()
-            );
-          }
-          
-          if (existingItem) {
-            if (result.item.quantity >= existingItem.quantity) {
-              removeItem(existingItem.id);
-            } else {
-              // Reduce quantity
-              const newQuantity = existingItem.quantity - result.item.quantity;
-              updateQuantity(existingItem.id, newQuantity);
-            }
-          }
-        }
-        
-        return send.success(result.data);
-      } else {
-        return send.error(result.error);
-      }
+      return result.success
+        ? send.success(result.data)
+        : send.error(result.error);
     } catch (err) {
       return send.error(tool.error);
     }
@@ -219,10 +257,10 @@ export default function ClientComponent({
   return (
     <VoiceProvider
       onToolCall={handleToolCall}
-      onMessage={(message: any) => {
+      onMessage={(message) => {
         console.log('Received message:', message);
       }}
-      onError={(error: any) => {
+      onError={(error) => {
         console.error('Voice error:', error);
         toast.error(error.message);
       }}
