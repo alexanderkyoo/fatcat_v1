@@ -1,23 +1,27 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface CartItem {
   id: string;
+  menuItemId: string;
   name: string;
   price: number;
   quantity: number;
   description?: string;
+  category?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, 'id'>) => void;
-  removeItem: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
+  addItem: (item: Omit<CartItem, 'id'>) => Promise<void>;
+  removeItem: (itemId: string) => Promise<void>;
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   getTotalPrice: () => number;
   getTotalItems: () => number;
+  findItemByMenuId: (menuItemId: string) => CartItem | undefined;
+  refreshCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -32,42 +36,159 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const addItem = (newItem: Omit<CartItem, 'id'>) => {
-    setItems(prevItems => {
-      const existingItem = prevItems.find(item => item.name === newItem.name);
+  // Load cart data from centralized data structure
+  const refreshCart = async () => {
+    try {
+      const response = await fetch('/api/getCart');
+      const result = await response.json();
+      if (result.success) {
+        setItems(result.data.items);
+      }
+    } catch (error) {
+      console.error('Error refreshing cart:', error);
+    }
+  };
+
+  // Load cart on mount and set up polling (only when connected to voice interface)
+  useEffect(() => {
+    refreshCart();
+    
+    // Only poll if we need real-time updates (you could make this conditional)
+    const interval = setInterval(refreshCart, 5000); // Reduced to every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const findItemByMenuId = (menuItemId: string) => {
+    return items.find(item => item.menuItemId === menuItemId);
+  };
+
+  const addItem = async (newItem: Omit<CartItem, 'id'>) => {
+    try {
+      setIsLoading(true);
       
-      if (existingItem) {
-        return prevItems.map(item =>
-          item.name === newItem.name
-            ? { ...item, quantity: item.quantity + newItem.quantity }
-            : item
+      // Use the centralized add_to_cart API
+      const response = await fetch('/api/addToCart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parameters: {
+            itemId: newItem.menuItemId,
+            quantity: newItem.quantity
+          }
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        // Refresh cart to get updated data
+        await refreshCart();
+      } else {
+        console.error('Failed to add item:', result.error);
+      }
+    } catch (error) {
+      console.error('Error adding item:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeItem = async (itemId: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Use the centralized remove_from_cart API
+      const response = await fetch('/api/removeFromCart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parameters: {
+            itemId: itemId
+          }
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        // Refresh cart to get updated data
+        await refreshCart();
+      } else {
+        console.error('Failed to remove item:', result.error);
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateQuantity = async (itemId: string, quantity: number) => {
+    try {
+      setIsLoading(true);
+      
+      if (quantity <= 0) {
+        await removeItem(itemId);
+        return;
+      }
+      
+      // For now, we'll use the cart manager directly
+      // In a real app, you might want a dedicated updateQuantity API
+      const response = await fetch('/api/updateCartItem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemId,
+          quantity
+        })
+      });
+      
+      // If the API doesn't exist yet, fall back to local update
+      if (response.status === 404) {
+        // Update locally and refresh
+        setItems(prevItems =>
+          prevItems.map(item =>
+            item.id === itemId ? { ...item, quantity } : item
+          )
         );
       } else {
-        return [...prevItems, { ...newItem, id: Date.now().toString() }];
+        const result = await response.json();
+        if (result.success) {
+          await refreshCart();
+        }
       }
-    });
-  };
-
-  const removeItem = (itemId: string) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== itemId));
-  };
-
-  const updateQuantity = (itemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(itemId);
-      return;
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      // Fall back to local update
+      setItems(prevItems =>
+        prevItems.map(item =>
+          item.id === itemId ? { ...item, quantity } : item
+        )
+      );
+    } finally {
+      setIsLoading(false);
     }
-    
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === itemId ? { ...item, quantity } : item
-      )
-    );
   };
 
-  const clearCart = () => {
-    setItems([]);
+  const clearCart = async () => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/getCart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'clear' })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        setItems([]);
+      }
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getTotalPrice = () => {
@@ -86,7 +207,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       updateQuantity,
       clearCart,
       getTotalPrice,
-      getTotalItems
+      getTotalItems,
+      findItemByMenuId,
+      refreshCart
     }}>
       {children}
     </CartContext.Provider>

@@ -14,61 +14,21 @@
           "name": "Buffalo Wings",
           "description": "Crispy chicken wings tossed in our signature buffalo sauce",
           "price": 12.99,
-          "image": "/wings.jpg",
-          "options": [
-            {
-              "id": "sauce",
-              "name": "Sauce",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "buffalo", "name": "Buffalo", "price": 0 },
-                { "id": "bbq", "name": "BBQ", "price": 0 },
-                { "id": "honey_garlic", "name": "Honey Garlic", "price": 0.5 },
-                { "id": "extra_hot", "name": "Extra Hot", "price": 0 }
-              ]
-            },
-            {
-              "id": "quantity",
-              "name": "Quantity",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "6pc", "name": "6 pieces", "price": 0 },
-                { "id": "12pc", "name": "12 pieces", "price": 6 },
-                { "id": "18pc", "name": "18 pieces", "price": 12 }
-              ]
-            }
-          ]
+          "image": "/wings.jpg"
         },
         {
           "id": "nachos",
           "name": "Loaded Nachos",
           "description": "Crispy tortilla chips topped with cheese, jalapeños, and sour cream",
           "price": 9.99,
-          "image": "/nachos.jpg",
-          "options": [
-            {
-              "id": "protein",
-              "name": "Add Protein",
-              "type": "single",
-              "required": false,
-              "choices": [
-                { "id": "none", "name": "No protein", "price": 0 },
-                { "id": "chicken", "name": "Grilled Chicken", "price": 3 },
-                { "id": "beef", "name": "Ground Beef", "price": 4 },
-                { "id": "pulled_pork", "name": "Pulled Pork", "price": 3.5 }
-              ]
-            }
-          ]
+          "image": "/nachos.jpg"
         },
         {
           "id": "mozzarella_sticks",
           "name": "Mozzarella Sticks",
           "description": "Golden fried mozzarella sticks served with marinara sauce",
           "price": 8.99,
-          "image": "/mozzarella.jpg",
-          "options": []
+          "image": "/mozzarella.jpg"
         }
       ]
     },
@@ -81,102 +41,21 @@
           "name": "FatCat Burger",
           "description": "Juicy beef patty with lettuce, tomato, onion, and our special sauce",
           "price": 15.99,
-          "image": "/burger.jpg",
-          "options": [
-            {
-              "id": "patty",
-              "name": "Patty",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "beef", "name": "Beef Patty", "price": 0 },
-                { "id": "chicken", "name": "Chicken Breast", "price": 0 },
-                { "id": "veggie", "name": "Veggie Patty", "price": 0 },
-                { "id": "double_beef", "name": "Double Beef", "price": 4 }
-              ]
-            },
-            {
-              "id": "cheese",
-              "name": "Cheese",
-              "type": "multiple",
-              "required": false,
-              "choices": [
-                { "id": "american", "name": "American Cheese", "price": 1 },
-                { "id": "cheddar", "name": "Cheddar", "price": 1 },
-                { "id": "swiss", "name": "Swiss", "price": 1.5 },
-                { "id": "blue", "name": "Blue Cheese", "price": 2 }
-              ]
-            },
-            {
-              "id": "sides",
-              "name": "Side",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "fries", "name": "French Fries", "price": 0 },
-                { "id": "onion_rings", "name": "Onion Rings", "price": 2 },
-                { "id": "sweet_potato", "name": "Sweet Potato Fries", "price": 1.5 },
-                { "id": "salad", "name": "Side Salad", "price": 1 }
-              ]
-            }
-          ]
+          "image": "/burger.jpg"
         },
         {
           "id": "pasta",
           "name": "Creamy Alfredo Pasta",
           "description": "Fettuccine pasta in a rich and creamy alfredo sauce",
           "price": 13.99,
-          "image": "/pasta.jpg",
-          "options": [
-            {
-              "id": "protein",
-              "name": "Add Protein",
-              "type": "single",
-              "required": false,
-              "choices": [
-                { "id": "none", "name": "No protein", "price": 0 },
-                { "id": "chicken", "name": "Grilled Chicken", "price": 4 },
-                { "id": "shrimp", "name": "Grilled Shrimp", "price": 6 },
-                { "id": "salmon", "name": "Grilled Salmon", "price": 8 }
-              ]
-            }
-          ]
+          "image": "/pasta.jpg"
         },
         {
           "id": "steak",
           "name": "Ribeye Steak",
           "description": "12oz ribeye steak grilled to perfection",
           "price": 28.99,
-          "image": "/steak.jpg",
-          "options": [
-            {
-              "id": "temperature",
-              "name": "Temperature",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "rare", "name": "Rare", "price": 0 },
-                { "id": "medium_rare", "name": "Medium Rare", "price": 0 },
-                { "id": "medium", "name": "Medium", "price": 0 },
-                { "id": "medium_well", "name": "Medium Well", "price": 0 },
-                { "id": "well_done", "name": "Well Done", "price": 0 }
-              ]
-            },
-            {
-              "id": "sides",
-              "name": "Two Sides",
-              "type": "multiple",
-              "required": true,
-              "maxSelections": 2,
-              "choices": [
-                { "id": "mashed_potatoes", "name": "Mashed Potatoes", "price": 0 },
-                { "id": "grilled_vegetables", "name": "Grilled Vegetables", "price": 0 },
-                { "id": "rice_pilaf", "name": "Rice Pilaf", "price": 0 },
-                { "id": "baked_potato", "name": "Baked Potato", "price": 0 },
-                { "id": "asparagus", "name": "Asparagus", "price": 2 }
-              ]
-            }
-          ]
+          "image": "/steak.jpg"
         }
       ]
     },
@@ -189,45 +68,14 @@
           "name": "New York Cheesecake",
           "description": "Rich and creamy cheesecake with graham cracker crust",
           "price": 7.99,
-          "image": "/cheesecake.jpg",
-          "options": [
-            {
-              "id": "topping",
-              "name": "Topping",
-              "type": "single",
-              "required": false,
-              "choices": [
-                { "id": "none", "name": "Plain", "price": 0 },
-                { "id": "strawberry", "name": "Strawberry Sauce", "price": 1 },
-                { "id": "chocolate", "name": "Chocolate Sauce", "price": 1 },
-                { "id": "caramel", "name": "Caramel Sauce", "price": 1 }
-              ]
-            }
-          ]
+          "image": "/cheesecake.jpg"
         },
         {
           "id": "ice_cream",
           "name": "Premium Ice Cream",
           "description": "Three scoops of premium ice cream",
           "price": 5.99,
-          "image": "/ice_cream.jpg",
-          "options": [
-            {
-              "id": "flavors",
-              "name": "Flavors (Choose 3)",
-              "type": "multiple",
-              "required": true,
-              "maxSelections": 3,
-              "choices": [
-                { "id": "vanilla", "name": "Vanilla", "price": 0 },
-                { "id": "chocolate", "name": "Chocolate", "price": 0 },
-                { "id": "strawberry", "name": "Strawberry", "price": 0 },
-                { "id": "mint_chip", "name": "Mint Chocolate Chip", "price": 0 },
-                { "id": "cookies_cream", "name": "Cookies & Cream", "price": 0.5 },
-                { "id": "rocky_road", "name": "Rocky Road", "price": 0.5 }
-              ]
-            }
-          ]
+          "image": "/ice_cream.jpg"
         }
       ]
     },
@@ -240,53 +88,14 @@
           "name": "Soft Drinks",
           "description": "Refreshing carbonated beverages",
           "price": 2.99,
-          "image": "/soda.jpg",
-          "options": [
-            {
-              "id": "flavor",
-              "name": "Flavor",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "coke", "name": "Coca-Cola", "price": 0 },
-                { "id": "pepsi", "name": "Pepsi", "price": 0 },
-                { "id": "sprite", "name": "Sprite", "price": 0 },
-                { "id": "orange", "name": "Orange Soda", "price": 0 },
-                { "id": "root_beer", "name": "Root Beer", "price": 0 }
-              ]
-            },
-            {
-              "id": "size",
-              "name": "Size",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "small", "name": "Small", "price": 0 },
-                { "id": "medium", "name": "Medium", "price": 0.5 },
-                { "id": "large", "name": "Large", "price": 1 }
-              ]
-            }
-          ]
+          "image": "/soda.jpg"
         },
         {
           "id": "coffee",
           "name": "Fresh Brewed Coffee",
           "description": "Premium coffee beans, freshly brewed",
           "price": 3.49,
-          "image": "/coffee.jpg",
-          "options": [
-            {
-              "id": "size",
-              "name": "Size",
-              "type": "single",
-              "required": true,
-              "choices": [
-                { "id": "small", "name": "Small", "price": 0 },
-                { "id": "medium", "name": "Medium", "price": 0.5 },
-                { "id": "large", "name": "Large", "price": 1 }
-              ]
-            }
-          ]
+          "image": "/coffee.jpg"
         }
       ]
     }

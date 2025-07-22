@@ -8,67 +8,62 @@ This document provides the tool parameters that should be configured in your Hum
 
 **Tool Name:** `add_to_cart`
 
-**Description:** Adds an item to the customer's cart with specified quantity and price.
+**Description:** Adds a menu item directly to the customer's cart. 
 
 **Parameters Schema:**
 ```json
 {
   "type": "object",
   "properties": {
-    "name": {
+    "itemId": {
       "type": "string",
-      "description": "The name of the menu item to add to cart"
-    },
-    "price": {
-      "type": "number",
-      "description": "The price of the item in USD (e.g., 12.99)"
+      "description": "The ID of the menu item (get from get_menu tool)"
     },
     "quantity": {
       "type": "number",
       "description": "The quantity of items to add (default: 1)"
-    },
-    "description": {
-      "type": "string",
-      "description": "Optional description or customization details for the item"
     }
   },
-  "required": ["name", "price", "quantity"]
+  "required": ["itemId"]
 }
 ```
 
 **Example Usage:**
-- "Add 2 burgers to my cart for $12.99 each"
-- "I'll take the chicken sandwich for $9.99"
-- "Add a large fries with no salt for $3.49"
+- Customer wants buffalo wings: `{"itemId": "wings", "quantity": 1}`
+- Customer wants 2 burgers: `{"itemId": "burger", "quantity": 2}`
+- Customer wants nachos: `{"itemId": "nachos"}`
 
-### 2. Remove from Cart Tool
+### 3. Remove from Cart Tool
 
 **Tool Name:** `remove_from_cart`
 
-**Description:** Removes an item or reduces quantity of an item from the customer's cart.
+**Description:** Removes an item from the customer's cart using menu validation.
 
 **Parameters Schema:**
 ```json
 {
   "type": "object",
   "properties": {
-    "name": {
+    "itemId": {
       "type": "string",
-      "description": "The name of the menu item to remove from cart"
+      "description": "The ID of the menu item to remove (preferred)"
+    },
+    "itemName": {
+      "type": "string",
+      "description": "The name of the menu item to remove (alternative to itemId)"
     },
     "quantity": {
       "type": "number",
       "description": "The quantity to remove (optional, defaults to 1)"
     }
   },
-  "required": ["name"]
+  "required": []
 }
 ```
 
 **Example Usage:**
-- "Remove the burger from my cart"
-- "Take out 1 fries from my order"
-- "Remove all the chicken sandwiches"
+- "Remove the buffalo wings from my cart"
+- "Take out 1 burger from my order"
 
 ### 3. Get Menu Tool
 
@@ -183,16 +178,10 @@ The LLM should be instructed to:
 
 **Assistant:** "Welcome to FatCat Bistro! We serve delicious comfort food with a modern twist. We have 8 items across 4 categories: appetizers, main courses, desserts, beverages. Our appetizers include Buffalo Wings, Loaded Nachos, and Mozzarella Sticks. For main courses, we have the FatCat Burger, Creamy Alfredo Pasta, and Ribeye Steak. What sounds good to you?"
 
-**Customer:** "Do you have buffalo wings?"
-
-**Assistant:** *Uses get_menu tool with {"itemName": "buffalo wings"}*
-
-**Assistant:** "Yes! We have Buffalo Wings in our appetizers section. They're crispy chicken wings tossed in our signature buffalo sauce for $12.99. Would you like to add them to your cart?"
-
-**Customer:** "Yes, I'll take the buffalo wings"
+**Customer:** "I'll take the buffalo wings"
 
 **Assistant:** *Uses add_to_cart tool*
-- Call: `{"name": "Buffalo Wings", "price": 12.99, "quantity": 1, "description": "Crispy chicken wings tossed in our signature buffalo sauce"}`
+- Call: `{"itemId": "wings", "quantity": 1}`
 
 **Assistant:** "Perfect! I've added Buffalo Wings for $12.99 to your cart. Would you like anything else?"
 

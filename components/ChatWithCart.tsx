@@ -109,16 +109,35 @@ function ChatContent({ accessToken }: { accessToken: string }) {
         // Handle cart operations
         if (message.name === "add_to_cart" && result.item) {
           addItem({
+            menuItemId: result.item.id,
             name: result.item.name,
             price: result.item.price,
             quantity: result.item.quantity,
             description: result.item.description,
+            selectedOptions: result.item.selectedOptions,
+            category: result.item.category,
           });
+          
+          // Show success toast and switch to cart view
+          toast.success(`Added ${result.item.name} to cart!`);
+          setShowCart(true);
+          
         } else if (message.name === "remove_from_cart" && result.item) {
-          // Find item by name and remove it
-          const existingItem = items.find(item => 
-            item.name.toLowerCase() === result.item.name.toLowerCase()
-          );
+          // Find item by menuItemId first, then by name
+          let existingItem = null;
+          
+          if (result.item.id) {
+            // Try to find by menuItemId (preferred)
+            existingItem = items.find(item => item.menuItemId === result.item.id);
+          }
+          
+          if (!existingItem) {
+            // Fallback to name-based search
+            existingItem = items.find(item => 
+              item.name.toLowerCase() === result.item.name.toLowerCase()
+            );
+          }
+          
           if (existingItem) {
             if (result.item.quantity >= existingItem.quantity) {
               removeItem(existingItem.id);

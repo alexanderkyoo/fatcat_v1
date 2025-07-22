@@ -5,22 +5,6 @@ import { useCart } from '@/contexts/CartContext';
 import { Button } from './ui/button';
 import { ShoppingCart, Plus } from 'lucide-react';
 import menuData from '@/data/menu.json';
-import ItemModal from './ItemModal';
-
-interface OptionChoice {
-  id: string;
-  name: string;
-  price: number;
-}
-
-interface ItemOption {
-  id: string;
-  name: string;
-  type: 'single' | 'multiple';
-  required: boolean;
-  maxSelections?: number;
-  choices: OptionChoice[];
-}
 
 interface MenuItem {
   id: string;
@@ -28,7 +12,6 @@ interface MenuItem {
   description: string;
   price: number;
   image: string;
-  options: ItemOption[];
 }
 
 interface Category {
@@ -38,22 +21,21 @@ interface Category {
 }
 
 export default function Menu() {
-  const { getTotalItems } = useCart();
+  const { getTotalItems, addItem } = useCart();
   const [selectedCategory, setSelectedCategory] = useState(menuData.categories[0].id);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const currentCategory = menuData.categories.find(cat => cat.id === selectedCategory);
   const totalItems = getTotalItems();
 
-  const handleItemClick = (item: any) => {
-    setSelectedItem(item as MenuItem);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedItem(null);
+  const handleAddToCart = (item: any) => {
+    addItem({
+      menuItemId: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: 1,
+      description: item.description,
+      category: currentCategory?.name || 'Other'
+    });
   };
 
   return (
@@ -87,8 +69,7 @@ export default function Menu() {
           {currentCategory?.items.map((item) => (
             <div
               key={item.id}
-              onClick={() => handleItemClick(item)}
-              className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
+              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 pr-4">
@@ -100,10 +81,7 @@ export default function Menu() {
                     </span>
                     <Button
                       className="bg-orange-500 hover:bg-orange-600 text-white h-8 px-3"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleItemClick(item);
-                      }}
+                      onClick={() => handleAddToCart(item)}
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       Add
@@ -156,14 +134,6 @@ export default function Menu() {
         </div>
       )}
 
-      {/* Item Modal */}
-      {selectedItem && (
-        <ItemModal
-          item={selectedItem}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
-      )}
     </div>
   );
 }
