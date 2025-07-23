@@ -41,23 +41,27 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Load cart data from centralized data structure
   const refreshCart = async () => {
     try {
+      console.log('📡 refreshCart called - fetching /api/getCart');
       const response = await fetch('/api/getCart');
       const result = await response.json();
       if (result.success) {
         setItems(result.data.items);
+        console.log('✅ Cart refreshed successfully, items:', result.data.items.length);
       }
     } catch (error) {
       console.error('Error refreshing cart:', error);
     }
   };
 
-  // Load cart on mount and set up polling (only when connected to voice interface)
+  // Load cart on mount - POLLING DISABLED to fix performance issue
   useEffect(() => {
-    refreshCart();
+    console.log('🚀 CartProvider mounted - loading initial cart (no polling)');
+    refreshCart(); // Only load once on mount
     
-    // Only poll if we need real-time updates (you could make this conditional)
-    const interval = setInterval(refreshCart, 5000); // Reduced to every 5 seconds
-    return () => clearInterval(interval);
+    // POLLING DISABLED - cart will only update on user actions
+    // If you need real-time updates, enable the polling below:
+    // const interval = setInterval(refreshCart, 30000); // Every 30 seconds
+    // return () => clearInterval(interval);
   }, []);
 
   const findItemByMenuId = (menuItemId: string) => {
