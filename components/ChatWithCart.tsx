@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 import { apiCall } from "@/utils/apiClient";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Menu as MenuIcon, ShoppingCart } from "lucide-react";
 
 type ToolMeta = {
   endpoint: string;
@@ -70,7 +72,7 @@ function ChatContent({
 }) {
   const { status } = useVoice();
   const { addItem, removeItem, clearCart, items, updateQuantity, refreshCart } = useCart();
-  const [topSectionHeight, setTopSectionHeight] = useState(50); // Default 50%
+  const [topSectionHeight, setTopSectionHeight] = useState(55); // Default 55% to weight more towards menu
   const [showCart, setShowCart] = useState(false); // Show menu by default
   
   // Debug: Log when showCart changes
@@ -131,7 +133,9 @@ function ChatContent({
         // Handle cart operations - just show feedback and refresh
         if (message.name === "add_to_cart" && result.item) {
           // Show success toast (but stay on menu like manual adds)
-          toast.success(`Added ${result.item.name} to cart!`);
+          toast.success(`Added ${result.item.name} to cart!`, {
+            icon: "🛒",
+          });
           console.log(`🎤 Voice added item: ${result.item.name}, refreshing cart...`);
           
           // Immediate refresh (but don't auto-switch to cart view)
@@ -140,7 +144,9 @@ function ChatContent({
           });
           
         } else if (message.name === "remove_from_cart" && result.item) {
-          toast.success(`Removed ${result.item.name} from cart!`);
+          toast.success(`Removed ${result.item.name} from cart!`, {
+            icon: "🗑️",
+          });
           console.log(`🎤 Voice removed item: ${result.item.name}, refreshing cart...`);
           
           // Immediate refresh
@@ -166,54 +172,86 @@ function ChatContent({
         // Layout when connected with resizable sections
         <div className="flex flex-col w-full h-full overflow-hidden">
           {/* Top section - Controls and Suggestions */}
-          <div 
-            className="flex flex-col overflow-hidden bg-white"
+          <motion.div 
+            className="flex flex-col overflow-hidden bg-gradient-to-br from-white via-orange-50/30 to-red-50/30"
             style={{ height: `${topSectionHeight}%` }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
             {/* Controls area */}
-            <div className="flex items-start justify-center bg-card border-b border-gray-200 p-4 pt-2">
+            <div className="flex items-start justify-center bg-white/80 backdrop-blur-sm border-b border-orange-200/50 p-4 pt-2">
               <Controls />
             </div>
             {/* Suggestions area */}
             <div className="flex-1 p-2 sm:p-4 overflow-auto">
               <SuggestedMessages />
             </div>
-          </div>
+          </motion.div>
 
           {/* Resizable bar */}
           <ResizableBar onResize={setTopSectionHeight} />
           
           {/* Bottom section - Menu/Cart */}
-          <div 
-            className="flex flex-col overflow-hidden bg-gray-50"
+          <motion.div 
+            className="flex flex-col overflow-hidden"
             style={{ height: `${100 - topSectionHeight}%` }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            {showCart ? (
-              <div className="h-full flex flex-col">
-                {/* Cart Header with Back Button */}
-                <div className="flex items-center p-4 border-b border-gray-200 bg-white">
-                  <button
-                    onClick={() => setShowCart(false)}
-                    className="text-orange-500 hover:text-orange-600 font-medium"
-                  >
-                    ← Back to Menu
-                  </button>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <Cart />
-                </div>
-              </div>
-            ) : (
-              <Menu />
-            )}
-          </div>
+            <AnimatePresence mode="wait">
+              {showCart ? (
+                <motion.div
+                  key="cart"
+                  initial={{ x: "100%", opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: "100%", opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  className="h-full flex flex-col"
+                >
+                  {/* Cart Header with Back Button */}
+                  <div className="flex items-center p-4 border-b border-orange-200/50 bg-white/80 backdrop-blur-sm">
+                    <motion.button
+                      onClick={() => setShowCart(false)}
+                      className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium transition-colors focus-ring rounded-lg px-3 py-2"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                      <span>Back to Menu</span>
+                    </motion.button>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <Cart />
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="menu"
+                  initial={{ x: "-100%", opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: "-100%", opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="h-full"
+                >
+                  <Menu />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       ) : (
         // Full screen chat when not connected
-        <div className="flex flex-col w-full h-full overflow-hidden">
+        <motion.div
+          className="flex flex-col w-full h-full overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <SuggestedMessages />
           <Controls />
-        </div>
+        </motion.div>
       )}
       <StartCall accessToken={accessToken} />
     </div>

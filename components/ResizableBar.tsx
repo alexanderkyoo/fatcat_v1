@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, GripHorizontal } from "lucide-react";
 import { useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/utils";
 
 interface ResizableBarProps {
@@ -10,6 +11,7 @@ interface ResizableBarProps {
 
 export default function ResizableBar({ onResize }: ResizableBarProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -60,32 +62,119 @@ export default function ResizableBar({ onResize }: ResizableBarProps) {
   }, [onResize]);
 
   return (
-    <div
+    <motion.div
       className={cn(
-        "flex items-center justify-center bg-gray-200 border-y border-gray-300 cursor-row-resize select-none",
-        "h-6 relative group hover:bg-gray-300 transition-colors duration-200",
-        isDragging && "bg-blue-300"
+        "flex items-center justify-center cursor-row-resize select-none relative",
+        "h-8 bg-gradient-to-r from-orange-100 via-white to-red-100",
+        "border-y border-orange-200/50",
+        "transition-all duration-300",
+        isDragging && "bg-gradient-to-r from-orange-200 to-red-200 shadow-lg",
+        isHovered && "bg-gradient-to-r from-orange-150 to-red-150"
       )}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
     >
-      {/* Drag handle with arrows */}
-      <div className="flex items-center gap-1 text-gray-600">
-        <ChevronUp className="w-4 h-4" />
-        <div className="flex gap-0.5">
-          <div className="w-1 h-1 bg-gray-500 rounded-full" />
-          <div className="w-1 h-1 bg-gray-500 rounded-full" />
-          <div className="w-1 h-1 bg-gray-500 rounded-full" />
-          <div className="w-1 h-1 bg-gray-500 rounded-full" />
-          <div className="w-1 h-1 bg-gray-500 rounded-full" />
-        </div>
-        <ChevronDown className="w-4 h-4" />
-      </div>
+      {/* Background glow effect */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-orange-300/20 to-red-300/20 rounded-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isDragging ? 1 : 0 }}
+        transition={{ duration: 0.2 }}
+      />
+
+      {/* Drag handle with enhanced design */}
+      <motion.div
+        className="flex items-center gap-2 text-gray-600 relative z-10"
+        animate={{
+          scale: isDragging ? 1.1 : 1,
+          color: isDragging ? "#f97316" : "#6b7280"
+        }}
+        transition={{ duration: 0.2 }}
+      >
+        <motion.div
+          animate={{ y: isDragging ? -1 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronUp className="w-4 h-4" />
+        </motion.div>
+        
+        {/* Enhanced grip indicator */}
+        <motion.div
+          className="flex items-center gap-1"
+          animate={{ scale: isDragging ? 1.2 : 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <GripHorizontal className="w-5 h-5 text-orange-500" />
+        </motion.div>
+        
+        <motion.div
+          animate={{ y: isDragging ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="w-4 h-4" />
+        </motion.div>
+      </motion.div>
       
-      {/* Hover tooltip */}
-      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-        Drag to resize
+      {/* Enhanced hover tooltip */}
+      <motion.div
+        className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs font-medium shadow-lg pointer-events-none whitespace-nowrap"
+        initial={{ opacity: 0, y: 5, scale: 0.9 }}
+        animate={{
+          opacity: isHovered && !isDragging ? 1 : 0,
+          y: isHovered && !isDragging ? 0 : 5,
+          scale: isHovered && !isDragging ? 1 : 0.9
+        }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="flex items-center gap-2">
+          <GripHorizontal className="w-3 h-3" />
+          <span>Drag to resize sections</span>
+        </div>
+        {/* Tooltip arrow */}
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+      </motion.div>
+
+
+      {/* Subtle animated dots for visual interest */}
+      <div className="absolute left-4 flex gap-1">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-1 h-1 bg-orange-400 rounded-full"
+            animate={{
+              opacity: [0.3, 0.8, 0.3],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: i * 0.2
+            }}
+          />
+        ))}
       </div>
-    </div>
+
+      <div className="absolute right-4 flex gap-1">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-1 h-1 bg-red-400 rounded-full"
+            animate={{
+              opacity: [0.3, 0.8, 0.3],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: i * 0.2 + 1
+            }}
+          />
+        ))}
+      </div>
+    </motion.div>
   );
-} 
+}
