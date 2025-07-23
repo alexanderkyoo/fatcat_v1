@@ -63,7 +63,7 @@ const tools: Record<string, ToolMeta> = {
 
 function ChatContent({ accessToken }: { accessToken: string }) {
   const { status } = useVoice();
-  const { addItem, removeItem, clearCart, items, updateQuantity } = useCart();
+  const { addItem, removeItem, clearCart, items, updateQuantity, refreshCart } = useCart();
   const [topSectionHeight, setTopSectionHeight] = useState(50); // Default 50%
   const [showCart, setShowCart] = useState(false); // Show menu by default
 
@@ -107,46 +107,18 @@ function ChatContent({ accessToken }: { accessToken: string }) {
       const result = await response.json();
       
       if (result.success) {
-        // Handle cart operations
+        // Handle cart operations - just show feedback and refresh
         if (message.name === "add_to_cart" && result.item) {
-          addItem({
-            menuItemId: result.item.id,
-            name: result.item.name,
-            price: result.item.price,
-            quantity: result.item.quantity,
-            description: result.item.description,
-            category: result.item.category,
-          });
-          
           // Show success toast and switch to cart view
           toast.success(`Added ${result.item.name} to cart!`);
           setShowCart(true);
+          // Trigger cart refresh to sync with voice changes
+          setTimeout(() => refreshCart(), 100);
           
         } else if (message.name === "remove_from_cart" && result.item) {
-          // Find item by menuItemId first, then by name
-          let existingItem = null;
-          
-          if (result.item.id) {
-            // Try to find by menuItemId (preferred)
-            existingItem = items.find(item => item.menuItemId === result.item.id);
-          }
-          
-          if (!existingItem) {
-            // Fallback to name-based search
-            existingItem = items.find(item => 
-              item.name.toLowerCase() === result.item.name.toLowerCase()
-            );
-          }
-          
-          if (existingItem) {
-            if (result.item.quantity >= existingItem.quantity) {
-              removeItem(existingItem.id);
-            } else {
-              // Reduce quantity
-              const newQuantity = existingItem.quantity - result.item.quantity;
-              updateQuantity(existingItem.id, newQuantity);
-            }
-          }
+          toast.success(`Removed ${result.item.name} from cart!`);
+          // Trigger cart refresh to sync with voice changes
+          setTimeout(() => refreshCart(), 100);
         }
         
         return send.success(result.data);
