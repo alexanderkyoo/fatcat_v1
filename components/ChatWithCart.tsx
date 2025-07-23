@@ -72,6 +72,11 @@ function ChatContent({
   const { addItem, removeItem, clearCart, items, updateQuantity, refreshCart } = useCart();
   const [topSectionHeight, setTopSectionHeight] = useState(50); // Default 50%
   const [showCart, setShowCart] = useState(false); // Show menu by default
+  
+  // Debug: Log when showCart changes
+  useEffect(() => {
+    console.log(`🛒 Cart view state changed: showCart = ${showCart}`);
+  }, [showCart]);
 
   // Clear cart when call ends
   useEffect(() => {
@@ -84,6 +89,8 @@ function ChatContent({
   // Listen for showCart events from Menu component
   useEffect(() => {
     const handleShowCart = () => {
+      console.log('🎯 handleShowCart event triggered - switching to cart view');
+      console.trace('Stack trace for showCart event:');
       setShowCart(true);
     };
 
