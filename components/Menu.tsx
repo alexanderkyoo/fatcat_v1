@@ -102,7 +102,7 @@ export default function Menu() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="group bg-white/80 backdrop-blur-sm border border-orange-200/50 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 card-hover"
+                className="group bg-white/80 backdrop-blur-sm border border-orange-200/50 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 card-hover"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
@@ -132,7 +132,7 @@ export default function Menu() {
                         whileTap={{ scale: 0.95 }}
                       >
                         <Button
-                          className={`h-12 px-6 rounded-full font-semibold transition-all duration-300 ${
+                          className={`w-12 h-12 rounded-full font-semibold transition-all duration-300 flex items-center justify-center ${
                             addingItems.has(item.id)
                               ? 'bg-green-500 hover:bg-green-600 text-white'
                               : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl'
@@ -147,14 +147,13 @@ export default function Menu() {
                                 initial={{ scale: 0, rotate: -180 }}
                                 animate={{ scale: 1, rotate: 0 }}
                                 exit={{ scale: 0, rotate: 180 }}
-                                className="flex items-center gap-2"
+                                className="flex items-center justify-center"
                               >
                                 <motion.div
                                   animate={{ rotate: 360 }}
                                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                   className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                                 />
-                                Added!
                               </motion.div>
                             ) : (
                               <motion.div
@@ -162,10 +161,9 @@ export default function Menu() {
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
-                                className="flex items-center gap-2"
+                                className="flex items-center justify-center"
                               >
                                 <Plus className="w-5 h-5" />
-                                Add to Cart
                               </motion.div>
                             )}
                           </AnimatePresence>

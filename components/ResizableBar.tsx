@@ -38,9 +38,12 @@ export default function ResizableBar({ onResize }: ResizableBarProps) {
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
 
     const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       const windowHeight = window.innerHeight;
       const touchY = e.touches[0]?.clientY;
       
@@ -51,23 +54,26 @@ export default function ResizableBar({ onResize }: ResizableBarProps) {
       }
     };
 
-    const handleTouchEnd = () => {
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       setIsDragging(false);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
 
-    document.addEventListener('touchmove', handleTouchMove);
-    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
   }, [onResize]);
 
   return (
     <motion.div
       className={cn(
         "flex items-center justify-center cursor-row-resize select-none relative",
-        "h-8 bg-gradient-to-r from-orange-100 via-white to-red-100",
+        "h-8 sm:h-8 md:h-8 bg-gradient-to-r from-orange-100 via-white to-red-100",
         "border-y border-orange-200/50",
         "transition-all duration-300",
+        "touch-none", // Prevent default touch behaviors
         isDragging && "bg-gradient-to-r from-orange-200 to-red-200 shadow-lg",
         isHovered && "bg-gradient-to-r from-orange-150 to-red-150"
       )}
