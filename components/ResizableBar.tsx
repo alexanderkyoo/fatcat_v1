@@ -41,16 +41,24 @@ export default function ResizableBar({ onResize }: ResizableBarProps) {
     e.stopPropagation();
     setIsDragging(true);
 
+    // Store initial touch position
+    const startY = e.touches[0].clientY;
+    let lastY = startY;
+
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      const windowHeight = window.innerHeight;
-      const touchY = e.touches[0]?.clientY;
       
-      if (touchY) {
+      const currentY = e.touches[0]?.clientY;
+      if (!currentY) return;
+
+      // Only process if there's significant movement
+      if (Math.abs(currentY - lastY) > 2) {
+        const windowHeight = window.innerHeight;
         // Calculate percentage (minimum 20%, maximum 80%)
-        let percentage = Math.min(Math.max((touchY / windowHeight) * 100, 20), 80);
+        let percentage = Math.min(Math.max((currentY / windowHeight) * 100, 20), 80);
         onResize(percentage);
+        lastY = currentY;
       }
     };
 
@@ -60,10 +68,12 @@ export default function ResizableBar({ onResize }: ResizableBarProps) {
       setIsDragging(false);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchcancel', handleTouchEnd);
     };
 
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: false });
+    document.addEventListener('touchcancel', handleTouchEnd, { passive: false });
   }, [onResize]);
 
   return (

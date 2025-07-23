@@ -69,7 +69,7 @@ export default function Cart() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="p-6 bg-white/80 backdrop-blur-sm border-b border-orange-200/50"
+        className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-b border-orange-200/50"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -194,7 +194,7 @@ export default function Cart() {
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="border-t border-orange-200/50 p-6 bg-white/90 backdrop-blur-sm"
+        className="border-t border-orange-200/50 p-4 sm:p-6 bg-white/90 backdrop-blur-sm"
       >
         {/* Order Summary */}
         <div className="space-y-3 mb-6">
