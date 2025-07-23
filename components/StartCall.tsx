@@ -35,7 +35,7 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
               }}
             >
               <Button
-                className={"z-50 flex items-center gap-1.5"}
+                className={"z-50 flex flex-col items-center justify-center gap-2 w-32 h-32 rounded-full text-lg font-bold shadow-lg hover:shadow-xl transition-shadow"}
                 onClick={() => {
                   connect(EVI_CONNECT_OPTIONS)
                     .then(() => {})
@@ -45,14 +45,12 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
                     .finally(() => {});
                 }}
               >
-                <span>
-                  <Phone
-                    className={"size-4 opacity-50"}
-                    strokeWidth={2}
-                    stroke={"currentColor"}
-                  />
-                </span>
-                <span>Start Call</span>
+                <Phone
+                  className={"size-8"}
+                  strokeWidth={2.5}
+                  stroke={"currentColor"}
+                />
+                <span className="text-sm font-bold">Start Call</span>
               </Button>
             </motion.div>
           </AnimatePresence>

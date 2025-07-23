@@ -45,12 +45,6 @@ export default function Menu() {
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Restaurant Header */}
-      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-red-500 text-white">
-        <h1 className="text-2xl font-bold">{menuData.restaurant.name}</h1>
-        <p className="text-orange-100">{menuData.restaurant.description}</p>
-      </div>
-
       {/* Category Tabs */}
       <div className="flex overflow-x-auto border-b border-gray-200 bg-white">
         {menuData.categories.map((category) => (
