@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { apiCall } from '@/utils/apiClient';
 
 export interface CartItem {
   id: string;
@@ -42,7 +43,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const refreshCart = async () => {
     try {
       console.log('📡 refreshCart called - fetching /api/getCart');
-      const response = await fetch('/api/getCart');
+      const response = await apiCall('/api/getCart');
       const result = await response.json();
       if (result.success) {
         setItems(result.data.items);
@@ -73,9 +74,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       
       // Use the centralized add_to_cart API
-      const response = await fetch('/api/addToCart', {
+      const response = await apiCall('/api/addToCart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           parameters: {
             itemId: newItem.menuItemId,
@@ -103,9 +103,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       
       // Use the centralized remove_from_cart API
-      const response = await fetch('/api/removeFromCart', {
+      const response = await apiCall('/api/removeFromCart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           parameters: {
             itemId: itemId
@@ -138,9 +137,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       
       // For now, we'll use the cart manager directly
       // In a real app, you might want a dedicated updateQuantity API
-      const response = await fetch('/api/updateCartItem', {
+      const response = await apiCall('/api/updateCartItem', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           itemId,
           quantity
@@ -178,9 +176,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      const response = await fetch('/api/getCart', {
+      const response = await apiCall('/api/getCart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'clear' })
       });
       

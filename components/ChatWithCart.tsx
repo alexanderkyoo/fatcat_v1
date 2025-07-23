@@ -10,6 +10,7 @@ import ResizableBar from "./ResizableBar";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
+import { apiCall } from "@/utils/apiClient";
 
 type ToolMeta = {
   endpoint: string;
