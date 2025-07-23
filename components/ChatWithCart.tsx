@@ -123,14 +123,13 @@ function ChatContent({
       if (result.success) {
         // Handle cart operations - just show feedback and refresh
         if (message.name === "add_to_cart" && result.item) {
-          // Show success toast and switch to cart view
+          // Show success toast (but stay on menu like manual adds)
           toast.success(`Added ${result.item.name} to cart!`);
           console.log(`🎤 Voice added item: ${result.item.name}, refreshing cart...`);
           
-          // Immediate refresh and show cart
+          // Immediate refresh (but don't auto-switch to cart view)
           refreshCart().then(() => {
-            console.log('✅ Cart refreshed after voice addition');
-            setShowCart(true);
+            console.log('✅ Cart refreshed after voice addition - cart indicator should appear');
           });
           
         } else if (message.name === "remove_from_cart" && result.item) {
