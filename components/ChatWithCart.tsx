@@ -61,7 +61,13 @@ const tools: Record<string, ToolMeta> = {
   },
 };
 
-function ChatContent({ accessToken }: { accessToken: string }) {
+function ChatContent({ 
+  accessToken, 
+  setToolCallHandler 
+}: { 
+  accessToken: string;
+  setToolCallHandler?: (handler: ToolCallHandler) => void;
+}) {
   const { status } = useVoice();
   const { addItem, removeItem, clearCart, items, updateQuantity, refreshCart } = useCart();
   const [topSectionHeight, setTopSectionHeight] = useState(50); // Default 50%
@@ -84,6 +90,14 @@ function ChatContent({ accessToken }: { accessToken: string }) {
     window.addEventListener('showCart', handleShowCart);
     return () => window.removeEventListener('showCart', handleShowCart);
   }, []);
+
+  // Register the tool call handler with parent component
+  useEffect(() => {
+    if (setToolCallHandler) {
+      setToolCallHandler(handleToolCall);
+      console.log('🔗 ChatContent tool handler registered with parent');
+    }
+  }, [setToolCallHandler]);
 
   const handleToolCall: ToolCallHandler = async (message, send) => {
     const tool = tools[message.name];
@@ -205,8 +219,19 @@ export default function ClientComponent({
 }: {
   accessToken: string;
 }) {
+  // This will be set by ChatContent and used by VoiceProvider
+  let chatContentHandler: ToolCallHandler | null = null;
 
   const handleToolCall: ToolCallHandler = async (message, send) => {
+    console.log('🎯 ClientComponent handleToolCall called for:', message.name);
+    
+    // Use the ChatContent handler if available, otherwise fallback to simple handler
+    if (chatContentHandler) {
+      console.log('✅ Using ChatContent handler with cart logic');
+      return chatContentHandler(message, send);
+    }
+
+    console.log('⚠️ Fallback to simple handler (no cart logic)');
     const tool = tools[message.name];
 
     if (!tool) {
@@ -236,16 +261,29 @@ export default function ClientComponent({
 
   return (
     <VoiceProvider
-      onToolCall={handleToolCall}
+      onToolCall={(message, send) => {
+        console.log('🚨 TOOL CALL EVENT DETECTED:', message.name, message.parameters);
+        return handleToolCall(message, send);
+      }}
       onMessage={(message) => {
         console.log('Received message:', message);
+        // Check if message contains tool call info
+        if (message.type === 'tool_call' || (message as any).tool_call) {
+          console.log('🔧 Tool call in message:', message);
+        }
       }}
       onError={(error) => {
         console.error('Voice error:', error);
         toast.error(error.message);
       }}
     >
-      <ChatContent accessToken={accessToken} />
+      <ChatContent 
+        accessToken={accessToken} 
+        setToolCallHandler={(handler: ToolCallHandler) => {
+          console.log('🔗 ChatContent handler registered');
+          chatContentHandler = handler;
+        }}
+      />
     </VoiceProvider>
   );
 }
