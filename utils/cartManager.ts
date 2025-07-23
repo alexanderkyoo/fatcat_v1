@@ -19,9 +19,23 @@ export interface Cart {
 
 const CART_FILE_PATH = path.join(process.cwd(), 'data', 'cart.json');
 
-// Utility to read cart from file
+// In-memory cart storage for production (serverless environments)
+let memoryCart: Cart = { items: [], lastUpdated: null, sessionId: null };
+
+// Check if we're in a read-only environment (like Vercel)
+function isReadOnlyEnvironment(): boolean {
+  return process.env.NODE_ENV === 'production' && process.env.VERCEL === '1';
+}
+
+// Utility to read cart from file or memory
 export function readCart(): Cart {
   try {
+    // Use in-memory storage in read-only environments (Vercel)
+    if (isReadOnlyEnvironment()) {
+      return memoryCart;
+    }
+    
+    // Use file storage in development
     if (!fs.existsSync(CART_FILE_PATH)) {
       return { items: [], lastUpdated: null, sessionId: null };
     }
@@ -33,10 +47,19 @@ export function readCart(): Cart {
   }
 }
 
-// Utility to write cart to file
+// Utility to write cart to file or memory
 export function writeCart(cart: Cart): void {
   try {
     cart.lastUpdated = new Date().toISOString();
+    
+    // Use in-memory storage in read-only environments (Vercel)
+    if (isReadOnlyEnvironment()) {
+      memoryCart = { ...cart };
+      console.log('Cart updated in memory (production mode)');
+      return;
+    }
+    
+    // Use file storage in development
     fs.writeFileSync(CART_FILE_PATH, JSON.stringify(cart, null, 2));
   } catch (error) {
     console.error('Error writing cart:', error);
