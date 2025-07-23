@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from './ui/button';
 import { ShoppingCart, Plus } from 'lucide-react';
@@ -26,6 +26,11 @@ export default function Menu() {
 
   const currentCategory = menuData.categories.find(cat => cat.id === selectedCategory);
   const totalItems = getTotalItems();
+  
+  // Debug: Log when totalItems changes
+  useEffect(() => {
+    console.log(`🍽️ Menu: totalItems = ${totalItems}`);
+  }, [totalItems]);
 
   const handleAddToCart = (item: any) => {
     addItem({
