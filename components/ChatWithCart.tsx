@@ -111,14 +111,22 @@ function ChatContent({ accessToken }: { accessToken: string }) {
         if (message.name === "add_to_cart" && result.item) {
           // Show success toast and switch to cart view
           toast.success(`Added ${result.item.name} to cart!`);
-          setShowCart(true);
-          // Trigger cart refresh to sync with voice changes
-          setTimeout(() => refreshCart(), 100);
+          console.log(`🎤 Voice added item: ${result.item.name}, refreshing cart...`);
+          
+          // Immediate refresh and show cart
+          refreshCart().then(() => {
+            console.log('✅ Cart refreshed after voice addition');
+            setShowCart(true);
+          });
           
         } else if (message.name === "remove_from_cart" && result.item) {
           toast.success(`Removed ${result.item.name} from cart!`);
-          // Trigger cart refresh to sync with voice changes
-          setTimeout(() => refreshCart(), 100);
+          console.log(`🎤 Voice removed item: ${result.item.name}, refreshing cart...`);
+          
+          // Immediate refresh
+          refreshCart().then(() => {
+            console.log('✅ Cart refreshed after voice removal');
+          });
         }
         
         return send.success(result.data);
