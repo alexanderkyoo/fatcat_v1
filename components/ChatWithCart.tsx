@@ -167,14 +167,18 @@ function ChatContent({
   const isConnected = status.value === "connected";
 
   return (
-    <div className="relative grow flex flex-col mx-auto w-full overflow-hidden h-[0px]">
+    <div className="relative grow flex flex-col mx-auto w-full overflow-hidden min-h-0 h-full">
       {isConnected ? (
         // Layout when connected with resizable sections
-        <div className="flex flex-col w-full h-full overflow-hidden">
+        <div className="flex flex-col w-full h-full min-h-screen min-h-[100dvh] overflow-hidden">
           {/* Top section - Controls and Suggestions */}
           <motion.div 
             className="flex flex-col overflow-hidden bg-gradient-to-br from-white via-orange-50/30 to-red-50/30"
-            style={{ height: `${topSectionHeight}%` }}
+            style={{ 
+              height: `${topSectionHeight}%`, 
+              minHeight: '200px',
+              maxHeight: '60vh'
+            }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -194,8 +198,11 @@ function ChatContent({
           
           {/* Bottom section - Menu/Cart */}
           <motion.div 
-            className="flex flex-col overflow-hidden"
-            style={{ height: `${100 - topSectionHeight}%` }}
+            className="flex flex-col overflow-hidden flex-1"
+            style={{ 
+              height: `${100 - topSectionHeight}%`,
+              minHeight: '300px'
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}

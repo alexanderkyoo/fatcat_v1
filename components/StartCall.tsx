@@ -16,7 +16,8 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
     <AnimatePresence>
       {status.value !== "connected" ? (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50"
+          className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 z-50 h-screen"
+          style={{ height: '100dvh' }}
           initial="initial"
           animate="enter"
           exit="exit"
@@ -48,7 +49,7 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
                 <div className="absolute inset-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 opacity-30 animate-ping animation-delay-75" />
                 
                 <Button
-                  className="relative z-10 w-40 h-40 rounded-full bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 hover:from-orange-600 hover:via-orange-700 hover:to-red-600 text-white shadow-2xl border-0 transition-all duration-300 group pulse-glow"
+                  className="relative z-10 w-40 h-40 rounded-full bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 hover:from-orange-600 hover:via-orange-700 hover:to-red-600 text-white shadow-2xl border-0 transition-all duration-300 group pulse-glow touch-manipulation"
                   onClick={() => {
                     connect(EVI_CONNECT_OPTIONS)
                       .then(() => {

@@ -13,7 +13,7 @@ export default async function Page() {
   }
 
   return (
-    <div className={"grow flex flex-col"}>
+    <div className={"grow flex flex-col h-full min-h-screen min-h-[100dvh]"}>
       <ChatWithCart accessToken={accessToken} />
     </div>
   );
