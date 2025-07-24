@@ -13,6 +13,8 @@ import { useCart } from "@/contexts/CartContext";
 import { apiCall } from "@/utils/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Menu as MenuIcon, ShoppingCart } from "lucide-react";
+import FloatingMenuCards, { FloatingCard, MenuItem } from "./FloatingMenuCard";
+import { Button } from "./ui/button";
 
 type ToolMeta = {
   endpoint: string;
@@ -25,15 +27,6 @@ type ToolMeta = {
 };
 
 const tools: Record<string, ToolMeta> = {
-  get_current_weather: {
-    endpoint: "/api/fetchWeather",
-    error: {
-      error: "Weather tool error",
-      code: "weather_tool_error",
-      level: "warn",
-      content: "There was an error with the weather tool",
-    },
-  },
   get_menu: {
     endpoint: "/api/getMenu",
     error: {
@@ -74,6 +67,7 @@ function ChatContent({
   const { addItem, removeItem, clearCart, items, updateQuantity, refreshCart } = useCart();
   const [topSectionHeight, setTopSectionHeight] = useState(55); // Default 55% to weight more towards menu
   const [showCart, setShowCart] = useState(false); // Show menu by default
+  const [floatingCards, setFloatingCards] = useState<FloatingCard[]>([]);
   
   // Debug: Log when showCart changes
   useEffect(() => {
@@ -99,6 +93,30 @@ function ChatContent({
     window.addEventListener('showCart', handleShowCart);
     return () => window.removeEventListener('showCart', handleShowCart);
   }, []);
+
+  // Add floating card management functions
+  const addFloatingCard = (item: MenuItem, category?: string) => {
+    const newCard: FloatingCard = {
+      id: `${item.id}-${Date.now()}`,
+      item,
+      category,
+      timestamp: Date.now()
+    };
+    
+    setFloatingCards(prev => [...prev, newCard]);
+    
+    // Auto-remove after 15 seconds
+    setTimeout(() => {
+      removeFloatingCard(newCard.id);
+    }, 15000);
+    
+    console.log('🎴 Added floating card for:', item.name);
+  };
+
+  const removeFloatingCard = (cardId: string) => {
+    setFloatingCards(prev => prev.filter(card => card.id !== cardId));
+    console.log('🗑️ Removed floating card:', cardId);
+  };
 
   // Register the tool call handler with parent component
   useEffect(() => {
@@ -130,8 +148,73 @@ function ChatContent({
       const result = await response.json();
       
       if (result.success) {
+        // Handle get_menu operations - create floating cards for menu items
+        if (message.name === "get_menu" && result.data) {
+          console.log('🔍 get_menu response data:', result.data);
+          
+          // Case 1: Specific item was retrieved (itemName parameter used)
+          if (result.data.item && typeof message.parameters === 'object' && message.parameters && 'itemName' in message.parameters) {
+            const menuItem: MenuItem = {
+              id: result.data.item.id,
+              name: result.data.item.name,
+              description: result.data.item.description,
+              price: result.data.item.price,
+              image: result.data.item.image
+            };
+            addFloatingCard(menuItem, result.data.category);
+            console.log('🎴 Created floating card for specific item search:', menuItem.name);
+          }
+          // Case 2: Category items retrieved with small count (likely recommendations)
+          else if (result.data.items && Array.isArray(result.data.items)) {
+            const items = result.data.items;
+            const categoryName = result.data.category;
+            
+            // Create cards for small categories (3 or fewer items) or when specifically asking about a category
+            if (items.length <= 3 || (typeof message.parameters === 'object' && message.parameters && 'category' in message.parameters)) {
+              items.forEach((item: any, index: number) => {
+                const menuItem: MenuItem = {
+                  id: item.id,
+                  name: item.name,
+                  description: item.description,
+                  price: item.price,
+                  image: item.image
+                };
+                // Stagger the card creation
+                setTimeout(() => {
+                  addFloatingCard(menuItem, categoryName);
+                }, index * 300);
+              });
+              console.log('🎴 Created floating cards for category:', categoryName, 'items:', items.length);
+            }
+          }
+          // Case 3: Full menu retrieved - create cards for featured items (first 2-3 from each category)
+          else if (result.data.fullMenu && result.data.fullMenu.categories) {
+            const categories = result.data.fullMenu.categories;
+            let cardIndex = 0;
+            
+            // Take first item from each category as featured recommendations
+            categories.slice(0, 3).forEach((category: any) => {
+              if (category.items && category.items.length > 0) {
+                const featuredItem = category.items[0]; // First item from each category
+                const menuItem: MenuItem = {
+                  id: featuredItem.id,
+                  name: featuredItem.name,
+                  description: featuredItem.description,
+                  price: featuredItem.price,
+                  image: featuredItem.image
+                };
+                
+                setTimeout(() => {
+                  addFloatingCard(menuItem, category.name);
+                }, cardIndex * 400);
+                cardIndex++;
+              }
+            });
+            console.log('🎴 Created floating cards for featured menu items from full menu');
+          }
+        }
         // Handle cart operations - just show feedback and refresh
-        if (message.name === "add_to_cart" && result.item) {
+        else if (message.name === "add_to_cart" && result.item) {
           // Show success toast (but stay on menu like manual adds)
           toast.success(`Added ${result.item.name} to cart!`, {
             icon: "🛒",
@@ -188,8 +271,13 @@ function ChatContent({
               <Controls />
             </div>
             {/* Suggestions area */}
-            <div className="flex-1 p-2 sm:p-4 overflow-auto">
+            <div className="flex-1 p-2 sm:p-4 overflow-auto relative">
               <SuggestedMessages />
+              {/* Floating Menu Cards - positioned within suggestions area */}
+              <FloatingMenuCards 
+                cards={floatingCards} 
+                onRemoveCard={removeFloatingCard} 
+              />
             </div>
           </motion.div>
 

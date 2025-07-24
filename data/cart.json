@@ -1,15 +1,5 @@
 {
-  "items": [
-    {
-      "id": "175328316359442pkw9pxc",
-      "menuItemId": "wings",
-      "name": "Buffalo Wings",
-      "price": 12.99,
-      "quantity": 1,
-      "description": "Crispy chicken wings tossed in our signature buffalo sauce",
-      "category": "Appetizers"
-    }
-  ],
-  "lastUpdated": "2025-07-23T15:06:03.594Z",
+  "items": [],
+  "lastUpdated": "2025-07-23T15:12:19.317Z",
   "sessionId": null
 }
