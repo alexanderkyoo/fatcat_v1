@@ -139,21 +139,37 @@ function ChatContent({
     }
 
     try {
+      // Parse parameters if they come as a string
+      const parsedParameters = typeof message.parameters === 'string' 
+        ? JSON.parse(message.parameters)
+        : message.parameters;
+        
       const response = await fetch(tool.endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parameters: message.parameters }),
+        body: JSON.stringify({ parameters: parsedParameters }),
       });
 
       const result = await response.json();
       
       if (result.success) {
-        // Handle get_menu operations - create floating cards for menu items
+        // Handle get_menu operations - create floating cards based on user request
         if (message.name === "get_menu" && result.data) {
           console.log('🔍 get_menu response data:', result.data);
           
-          // Case 1: Specific item was retrieved (itemName parameter used)
-          if (result.data.item && typeof message.parameters === 'object' && message.parameters && 'itemName' in message.parameters) {
+          // Don't create cards for validation requests or full menu requests
+          if (parsedParameters?.validation === true) {
+            console.log('🚫 No floating cards - validation request');
+            return result;
+          }
+          
+          if (!parsedParameters || Object.keys(parsedParameters).length === 0) {
+            console.log('🚫 No floating cards - full menu request');
+            return result;
+          }
+          
+          // Create card for specific item request
+          if (parsedParameters.itemName && result.data.item) {
             const menuItem: MenuItem = {
               id: result.data.item.id,
               name: result.data.item.name,
@@ -162,55 +178,28 @@ function ChatContent({
               image: result.data.item.image
             };
             addFloatingCard(menuItem, result.data.category);
-            console.log('🎴 Created floating card for specific item search:', menuItem.name);
+            console.log('🎴 Created floating card for item:', menuItem.name);
           }
-          // Case 2: Category items retrieved with small count (likely recommendations)
-          else if (result.data.items && Array.isArray(result.data.items)) {
+          
+          // Create cards for category request
+          else if (parsedParameters.category && result.data.items && Array.isArray(result.data.items)) {
             const items = result.data.items;
             const categoryName = result.data.category;
             
-            // Create cards for small categories (3 or fewer items) or when specifically asking about a category
-            if (items.length <= 3 || (typeof message.parameters === 'object' && message.parameters && 'category' in message.parameters)) {
-              items.forEach((item: any, index: number) => {
-                const menuItem: MenuItem = {
-                  id: item.id,
-                  name: item.name,
-                  description: item.description,
-                  price: item.price,
-                  image: item.image
-                };
-                // Stagger the card creation
-                setTimeout(() => {
-                  addFloatingCard(menuItem, categoryName);
-                }, index * 300);
-              });
-              console.log('🎴 Created floating cards for category:', categoryName, 'items:', items.length);
-            }
-          }
-          // Case 3: Full menu retrieved - create cards for featured items (first 2-3 from each category)
-          else if (result.data.fullMenu && result.data.fullMenu.categories) {
-            const categories = result.data.fullMenu.categories;
-            let cardIndex = 0;
-            
-            // Take first item from each category as featured recommendations
-            categories.slice(0, 3).forEach((category: any) => {
-              if (category.items && category.items.length > 0) {
-                const featuredItem = category.items[0]; // First item from each category
-                const menuItem: MenuItem = {
-                  id: featuredItem.id,
-                  name: featuredItem.name,
-                  description: featuredItem.description,
-                  price: featuredItem.price,
-                  image: featuredItem.image
-                };
-                
-                setTimeout(() => {
-                  addFloatingCard(menuItem, category.name);
-                }, cardIndex * 400);
-                cardIndex++;
-              }
+            items.forEach((item: any, index: number) => {
+              const menuItem: MenuItem = {
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                image: item.image
+              };
+              // Stagger the card creation
+              setTimeout(() => {
+                addFloatingCard(menuItem, categoryName);
+              }, index * 300);
             });
-            console.log('🎴 Created floating cards for featured menu items from full menu');
+            console.log('🎴 Created floating cards for category:', categoryName, 'items:', items.length);
           }
         }
         // Handle cart operations - just show feedback and refresh
@@ -383,10 +372,15 @@ export default function ClientComponent({
     }
 
     try {
+      // Parse parameters if they come as a string
+      const parsedParameters = typeof message.parameters === 'string' 
+        ? JSON.parse(message.parameters)
+        : message.parameters;
+        
       const response = await fetch(tool.endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parameters: message.parameters }),
+        body: JSON.stringify({ parameters: parsedParameters }),
       });
 
       const result = await response.json();

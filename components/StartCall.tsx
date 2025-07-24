@@ -14,9 +14,13 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
     configId: process.env.NEXT_PUBLIC_HUME_CONFIG_ID,
   };
 
-  // Reset when call ends
+  // Reset immediately when call connects (screen transitions) and when call ends
   useEffect(() => {
-    if (status.value === "disconnected") {
+    if (status.value === "connected") {
+      // Reset immediately when transitioning to chat screen
+      setIsClicked(false);
+    } else if (status.value === "disconnected") {
+      // Also reset when call ends (backup)
       setIsClicked(false);
     }
   }, [status.value]);

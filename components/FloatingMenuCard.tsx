@@ -58,24 +58,8 @@ function FloatingMenuCard({ card, onRemove, index }: FloatingMenuCardProps) {
     setTimeout(() => onRemove(card.id), 300);
   };
 
-  // Calculate organic positioning - start centered and spread out
-  const getOrganicPosition = (index: number) => {
-    if (index === 0) {
-      // First card starts centered
-      return { x: 0, y: 0 };
-    }
-    
-    // Create a spiral-like pattern for subsequent cards
-    const angle = (index * 137.5) * (Math.PI / 180); // Golden angle for natural distribution
-    const radius = Math.min(60 + (index * 40), 200); // Increasing radius, max 200px
-    
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-    
-    return { x, y };
-  };
-
-  const position = getOrganicPosition(index);
+  // This component is deprecated - using FloatingMenuCardWithPosition instead
+  const position = { x: 0, y: 0 };
 
   return (
     <motion.div
