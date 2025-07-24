@@ -68,11 +68,34 @@ function ChatContent({
   const [topSectionHeight, setTopSectionHeight] = useState(55); // Default 55% to weight more towards menu
   const [showCart, setShowCart] = useState(false); // Show menu by default
   const [floatingCards, setFloatingCards] = useState<FloatingCard[]>([]);
+  const [viewport, setViewport] = useState({ 
+    width: typeof window !== 'undefined' ? window.innerWidth : 800, 
+    height: typeof window !== 'undefined' ? window.innerHeight : 600 
+  });
   
   // Debug: Log when showCart changes
   useEffect(() => {
     console.log(`🛒 Cart view state changed: showCart = ${showCart}`);
   }, [showCart]);
+
+  // Track viewport changes for responsive card positioning
+  useEffect(() => {
+    const updateViewport = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    window.addEventListener('orientationchange', updateViewport);
+    
+    return () => {
+      window.removeEventListener('resize', updateViewport);
+      window.removeEventListener('orientationchange', updateViewport);
+    };
+  }, []);
 
   // Clear cart when call ends
   useEffect(() => {
@@ -105,10 +128,10 @@ function ChatContent({
     
     setFloatingCards(prev => [...prev, newCard]);
     
-    // Auto-remove after 15 seconds
+    // Auto-remove after 30 seconds
     setTimeout(() => {
       removeFloatingCard(newCard.id);
-    }, 15000);
+    }, 30000);
     
     console.log('🎴 Added floating card for:', item.name);
   };
@@ -262,10 +285,13 @@ function ChatContent({
             {/* Suggestions area */}
             <div className="flex-1 p-2 sm:p-4 overflow-auto relative">
               <SuggestedMessages />
-              {/* Floating Menu Cards - positioned within suggestions area */}
+              {/* Floating Menu Cards - responsive to viewport dimensions */}
               <FloatingMenuCards 
                 cards={floatingCards} 
-                onRemoveCard={removeFloatingCard} 
+                onRemoveCard={removeFloatingCard}
+                topSectionHeight={topSectionHeight}
+                viewportHeight={viewport.height}
+                viewportWidth={viewport.width}
               />
             </div>
           </motion.div>
@@ -324,6 +350,8 @@ function ChatContent({
               )}
             </AnimatePresence>
           </motion.div>
+          
+
         </div>
       ) : (
         // Full screen chat when not connected

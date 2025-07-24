@@ -123,22 +123,6 @@ export default function SuggestedMessages() {
             transition={{ duration: 0.5 }}
             className="text-center mb-8"
           >
-            <motion.div
-              className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center"
-              animate={{ 
-                rotate: [0, 5, -5, 0],
-                scale: [1, 1.05, 1] 
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity,
-                ease: "easeInOut" 
-              }}
-            >
-              <MessageCircle className="w-10 h-10 text-white" />
-            </motion.div>
-            <h2 className="text-3xl font-bold gradient-text mb-3">Ready to start your order?</h2>
-            <p className="text-gray-600 text-lg">Start a call and I'll help you find the perfect meal!</p>
           </motion.div>
         ) : (
           // Connected state header

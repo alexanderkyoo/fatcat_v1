@@ -169,121 +169,58 @@ function FloatingMenuCard({ card, onRemove, index }: FloatingMenuCardProps) {
 interface FloatingMenuCardsProps {
   cards: FloatingCard[];
   onRemoveCard: (id: string) => void;
+  topSectionHeight?: number;
+  viewportHeight?: number;
+  viewportWidth?: number;
 }
 
-// Collision detection and positioning system
-const calculateNonOverlappingPositions = (cardCount: number, containerWidth: number, containerHeight: number) => {
-  const cardWidth = 288; // w-72 = 288px
-  const cardHeight = 200; // Approximate card height
-  const minSpacing = 20; // Minimum space between cards
-  const effectiveCardWidth = cardWidth + minSpacing;
-  const effectiveCardHeight = cardHeight + minSpacing;
-  
+// Simple list-based positioning system
+const calculateListPositions = (cardCount: number, containerWidth: number, containerHeight: number) => {
   const positions: { x: number; y: number }[] = [];
   
   if (cardCount === 0) return positions;
   
-  // Calculate how many cards can fit in each dimension
-  const maxCols = Math.floor(containerWidth / effectiveCardWidth);
-  const maxRows = Math.floor(containerHeight / effectiveCardHeight);
-  const maxCards = maxCols * maxRows;
+  const isMobile = containerWidth < 640;
+  const cardHeight = isMobile ? 100 : 120; // Much smaller height
+  const spacing = isMobile ? 12 : 16;
   
-  // If we have more cards than can fit, use a more compact spiral
-  if (cardCount > maxCards) {
-    return calculateCompactSpiral(cardCount, containerWidth, containerHeight, cardWidth, cardHeight, minSpacing);
+  // Single card - center it
+  if (cardCount === 1) {
+    positions.push({ x: 0, y: 0 });
+    return positions;
   }
   
-  // For fewer cards, use a centered grid approach
-  const cols = Math.min(cardCount, maxCols);
-  const rows = Math.ceil(cardCount / cols);
-  
-  // Calculate starting position to center the grid
-  const gridWidth = cols * effectiveCardWidth - minSpacing;
-  const gridHeight = rows * effectiveCardHeight - minSpacing;
-  const startX = (containerWidth - gridWidth) / 2;
-  const startY = (containerHeight - gridHeight) / 2;
+  // Multiple cards - stack them horizontally like a list
+  const cardWidth = isMobile ? 80 : 96; // Much smaller cards
+  const totalWidth = (cardCount * cardWidth) + ((cardCount - 1) * spacing);
+  const startX = -totalWidth / 2;
   
   for (let i = 0; i < cardCount; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    
     positions.push({
-      x: startX + (col * effectiveCardWidth) - containerWidth / 2,
-      y: startY + (row * effectiveCardHeight) - containerHeight / 2
+      x: startX + (i * (cardWidth + spacing)) + (cardWidth / 2),
+      y: 0 // Always center vertically
     });
   }
   
   return positions;
 };
 
-// Compact spiral for when there are many cards
-const calculateCompactSpiral = (cardCount: number, containerWidth: number, containerHeight: number, cardWidth: number, cardHeight: number, minSpacing: number) => {
-  const positions: { x: number; y: number }[] = [];
-  const centerX = 0;
-  const centerY = 0;
-  
-  // First card at center
-  positions.push({ x: centerX, y: centerY });
-  
-  if (cardCount === 1) return positions;
-  
-  // Calculate spiral with collision detection
-  const maxRadius = Math.min(containerWidth, containerHeight) / 2 - cardWidth / 2;
-  const angleStep = 45; // Degrees between positions
-  let radius = cardWidth + minSpacing;
-  let angle = 0;
-  
-  for (let i = 1; i < cardCount; i++) {
-    let positioned = false;
-    let attempts = 0;
-    
-    while (!positioned && attempts < 20) {
-      const x = centerX + Math.cos(angle * Math.PI / 180) * radius;
-      const y = centerY + Math.sin(angle * Math.PI / 180) * radius;
-      
-      // Check if position is within bounds
-      if (Math.abs(x) + cardWidth / 2 <= containerWidth / 2 && 
-          Math.abs(y) + cardHeight / 2 <= containerHeight / 2) {
-        
-        // Check for collisions with existing cards
-        let hasCollision = false;
-        for (const pos of positions) {
-          const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
-          if (distance < cardWidth + minSpacing) {
-            hasCollision = true;
-            break;
-          }
-        }
-        
-        if (!hasCollision) {
-          positions.push({ x, y });
-          positioned = true;
-        }
-      }
-      
-      // Move to next position
-      angle += angleStep;
-      if (angle >= 360) {
-        angle = 0;
-        radius += cardWidth / 2 + minSpacing;
-        if (radius > maxRadius) break;
-      }
-      attempts++;
-    }
-    
-    // Fallback: if we can't find a good position, place it in a safe spot
-    if (!positioned) {
-      const fallbackX = (i % 3 - 1) * (cardWidth + minSpacing);
-      const fallbackY = Math.floor(i / 3) * (cardHeight + minSpacing);
-      positions.push({ x: fallbackX, y: fallbackY });
-    }
-  }
-  
-  return positions;
-};
 
-export default function FloatingMenuCards({ cards, onRemoveCard }: FloatingMenuCardsProps) {
+
+export default function FloatingMenuCards({ 
+  cards, 
+  onRemoveCard, 
+  topSectionHeight = 55,
+  viewportHeight = window.innerHeight,
+  viewportWidth = window.innerWidth
+}: FloatingMenuCardsProps) {
   const [containerDimensions, setContainerDimensions] = useState({ width: 800, height: 400 });
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Debug: Log viewport changes
+  useEffect(() => {
+    console.log(`🔄 Viewport update: ${viewportWidth}x${viewportHeight}, topSection: ${topSectionHeight}%`);
+  }, [viewportWidth, viewportHeight, topSectionHeight]);
   
   // Monitor container size changes
   useEffect(() => {
@@ -291,6 +228,8 @@ export default function FloatingMenuCards({ cards, onRemoveCard }: FloatingMenuC
       const container = document.querySelector('[data-floating-cards-container]');
       if (container) {
         const rect = container.getBoundingClientRect();
+        const mobile = window.innerWidth < 768;
+        setIsMobile(mobile);
         setContainerDimensions({ width: rect.width, height: rect.height });
       }
     };
@@ -311,19 +250,43 @@ export default function FloatingMenuCards({ cards, onRemoveCard }: FloatingMenuC
     };
   }, []);
   
-  // Calculate positions for all cards
-  const positions = calculateNonOverlappingPositions(
+  // Calculate effective viewport dimensions based on resize position
+  const topSectionPixelHeight = (viewportHeight * topSectionHeight) / 100;
+  const resizeBarHeight = 8; // Height of resize bar
+  const controlsHeight = isMobile ? 100 : 80; // Controls area height
+  
+  // Available space for cards in the top section (avoiding controls and resize bar)
+  const availableCardHeight = topSectionPixelHeight - controlsHeight - resizeBarHeight - 20; // 20px buffer
+  const availableCardWidth = viewportWidth - (isMobile ? 32 : 64); // Side padding
+  
+  // Calculate positions using simple list layout
+  const rawPositions = calculateListPositions(
     cards.length, 
-    containerDimensions.width, 
-    containerDimensions.height
+    Math.max(320, availableCardWidth), 
+    Math.max(200, availableCardHeight)
   );
+  
+  // Position cards in the optimal area (upper portion of top section, avoiding resize bar)
+  const optimalVerticalPosition = -(availableCardHeight / 4); // Bias towards upper area
+  
+  const positions = rawPositions.map((pos: { x: number; y: number }) => ({
+    x: pos.x,
+    y: pos.y + optimalVerticalPosition
+  }));
   
   return (
     <div 
-      className="absolute inset-0 pointer-events-none z-10" 
+      className="absolute inset-0 pointer-events-none z-10 overflow-x-auto overflow-y-hidden" 
       data-floating-cards-container
+      style={{
+        // Dynamic padding based on viewport and resize position
+        paddingTop: `${controlsHeight / 2}px`, // Half controls height as top buffer
+        paddingBottom: `${resizeBarHeight + 10}px`, // Resize bar height + buffer
+        paddingLeft: isMobile ? '16px' : '32px',
+        paddingRight: isMobile ? '16px' : '32px',
+      }}
     >
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full flex flex-row items-center justify-center">
         <AnimatePresence mode="popLayout">
           {cards.map((card, index) => (
             <div key={card.id} className="pointer-events-auto">
@@ -377,11 +340,6 @@ function FloatingMenuCardWithPosition({
     }
   };
 
-  const handleClose = () => {
-    setIsRemoving(true);
-    setTimeout(() => onRemove(card.id), 300);
-  };
-
   return (
     <motion.div
       initial={{ 
@@ -409,65 +367,37 @@ function FloatingMenuCardWithPosition({
         damping: 20,
         delay: index * 0.15 
       }}
-      className="absolute z-50 w-72 max-w-[85vw]"
+      className="absolute z-50 w-20 sm:w-24"
       style={{
         left: '50%',
         top: '50%',
-        transform: 'translate(-50%, -50%)',
+        transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
+        maxHeight: 'calc(100vh - 8rem)', // Prevent overflow on mobile
       }}
     >
       <motion.div
-        className="bg-white/95 backdrop-blur-md border border-orange-200/50 rounded-2xl shadow-xl shadow-orange-100/50 overflow-hidden"
-        whileHover={{ scale: 1.02, y: -2 }}
+        className="bg-white/95 backdrop-blur-md border border-orange-200/50 rounded-xl shadow-lg shadow-orange-100/50 overflow-hidden relative"
+        whileHover={{ scale: 1.05, y: -2 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        {/* Header with close button */}
-        <div className="flex items-center justify-between p-3 border-b border-orange-100/50">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-            <span className="text-xs font-medium text-orange-600">
-              {card.category || "Menu Item"}
-            </span>
-          </div>
-          <Button
-            onClick={handleClose}
-            variant="secondary"
-            className="w-6 h-6 p-0 hover:bg-orange-100/50 rounded-full"
-          >
-            <X className="w-3 h-3" />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="p-4">
-          {/* Item image placeholder */}
-          <div className="w-full h-24 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl mb-3 flex items-center justify-center">
-            <span className="text-2xl">🍽️</span>
+        {/* Compact content */}
+        <div className="p-2">
+          {/* Item image */}
+          <div className="w-full h-16 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg mb-2 flex items-center justify-center relative">
+            <span className="text-lg">🍽️</span>
+            {/* Add button overlay */}
+            <Button
+              onClick={handleAddToCart}
+              className="absolute -top-1 -right-1 w-6 h-6 p-0 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-full shadow-md flex items-center justify-center"
+            >
+              <Plus className="w-3 h-3" />
+            </Button>
           </div>
 
-          {/* Item details */}
-          <div className="space-y-2">
-            <h3 className="font-bold text-gray-900 text-lg leading-tight">
-              {card.item.name}
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {card.item.description}
-            </p>
-            
-            {/* Price and add button */}
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-xl font-bold text-orange-600">
-                ${card.item.price.toFixed(2)}
-              </span>
-              <Button
-                onClick={handleAddToCart}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Add to Cart
-              </Button>
-            </div>
-          </div>
+          {/* Item name */}
+          <h3 className="text-xs font-medium text-gray-900 text-center leading-tight line-clamp-2">
+            {card.item.name}
+          </h3>
         </div>
 
         {/* Animated border */}
