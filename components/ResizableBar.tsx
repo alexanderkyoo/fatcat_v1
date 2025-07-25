@@ -121,24 +121,7 @@ export default function ResizableBar({ onResize }: ResizableBarProps) {
         </motion.div>
       </motion.div>
       
-      {/* Enhanced hover tooltip */}
-      <motion.div
-        className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs font-medium shadow-lg pointer-events-none whitespace-nowrap"
-        initial={{ opacity: 0, y: 5, scale: 0.9 }}
-        animate={{
-          opacity: isHovered && !isDragging ? 1 : 0,
-          y: isHovered && !isDragging ? 0 : 5,
-          scale: isHovered && !isDragging ? 1 : 0.9
-        }}
-        transition={{ duration: 0.2 }}
-      >
-        <div className="flex items-center gap-2">
-          <GripHorizontal className="w-3 h-3" />
-          <span>Drag to resize sections</span>
-        </div>
-        {/* Tooltip arrow */}
-        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-      </motion.div>
+
 
 
       {/* Subtle animated dots for visual interest */}

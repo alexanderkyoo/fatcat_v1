@@ -44,7 +44,7 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
 
   return (
     <AnimatePresence>
-      {status.value !== "connected" && !isClicked ? (
+      {status.value !== "connected" ? (
         <motion.div
           className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 z-50 h-screen"
           style={{ height: '100dvh' }}
@@ -126,8 +126,12 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
                       strokeWidth={2}
                     />
                     <div className="text-center">
-                      <div className="text-lg font-bold">Start Call</div>
-                      <div className="text-sm opacity-90">Tap to begin</div>
+                      <div className="text-lg font-bold">
+                        {isClicked ? "Connecting..." : "Start Call"}
+                      </div>
+                      <div className="text-sm opacity-90">
+                        {isClicked ? "Please wait" : "Tap to begin"}
+                      </div>
                     </div>
                   </motion.div>
                 </Button>

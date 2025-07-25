@@ -181,7 +181,7 @@ const calculateListPositions = (cardCount: number, containerWidth: number, conta
   if (cardCount === 0) return positions;
   
   const isMobile = containerWidth < 640;
-  const cardHeight = isMobile ? 100 : 120; // Much smaller height
+  const cardHeight = isMobile ? 150 : 180; // 1.5x bigger height
   const spacing = isMobile ? 12 : 16;
   
   // Single card - center it
@@ -190,9 +190,11 @@ const calculateListPositions = (cardCount: number, containerWidth: number, conta
     return positions;
   }
   
-  // Multiple cards - stack them horizontally like a list
-  const cardWidth = isMobile ? 80 : 96; // Much smaller cards
+  // Multiple cards - stack them horizontally like a list, perfectly centered
+  const cardWidth = isMobile ? 128 : 144; // 1.5x bigger cards (w-32/w-36)
   const totalWidth = (cardCount * cardWidth) + ((cardCount - 1) * spacing);
+  
+  // Start from the left edge of the centered group
   const startX = -totalWidth / 2;
   
   for (let i = 0; i < cardCount; i++) {
@@ -266,12 +268,10 @@ export default function FloatingMenuCards({
     Math.max(200, availableCardHeight)
   );
   
-  // Position cards in the optimal area (upper portion of top section, avoiding resize bar)
-  const optimalVerticalPosition = -(availableCardHeight / 4); // Bias towards upper area
-  
+  // Center the cards perfectly in the available space
   const positions = rawPositions.map((pos: { x: number; y: number }) => ({
     x: pos.x,
-    y: pos.y + optimalVerticalPosition
+    y: pos.y // Keep cards perfectly centered vertically
   }));
   
   return (
@@ -286,7 +286,7 @@ export default function FloatingMenuCards({
         paddingRight: isMobile ? '16px' : '32px',
       }}
     >
-      <div className="relative w-full h-full flex flex-row items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center">
         <AnimatePresence mode="popLayout">
           {cards.map((card, index) => (
             <div key={card.id} className="pointer-events-auto">
@@ -367,7 +367,7 @@ function FloatingMenuCardWithPosition({
         damping: 20,
         delay: index * 0.15 
       }}
-      className="absolute z-50 w-20 sm:w-24"
+      className="absolute z-50 w-32 sm:w-36"
       style={{
         left: '50%',
         top: '50%',
@@ -383,7 +383,7 @@ function FloatingMenuCardWithPosition({
         {/* Compact content */}
         <div className="p-2">
           {/* Item image */}
-          <div className="w-full h-16 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg mb-2 flex items-center justify-center relative">
+          <div className="w-full h-20 sm:h-24 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg mb-2 flex items-center justify-center relative">
             <span className="text-lg">🍽️</span>
             {/* Add button overlay */}
             <Button
@@ -395,7 +395,7 @@ function FloatingMenuCardWithPosition({
           </div>
 
           {/* Item name */}
-          <h3 className="text-xs font-medium text-gray-900 text-center leading-tight line-clamp-2">
+          <h3 className="text-sm font-medium text-gray-900 text-center leading-tight line-clamp-2">
             {card.item.name}
           </h3>
         </div>
