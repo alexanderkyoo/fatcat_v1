@@ -14,21 +14,24 @@
           "name": "Buffalo Wings",
           "description": "Crispy chicken wings tossed in our signature buffalo sauce",
           "price": 12.99,
-          "image": "/wings.jpg"
+          "image": "/wings.jpg",
+          "allergies": ["meat", "gluten"]
         },
         {
           "id": "nachos",
           "name": "Loaded Nachos",
           "description": "Crispy tortilla chips topped with cheese, jalapeños, and sour cream",
           "price": 9.99,
-          "image": "/nachos.jpg"
+          "image": "/nachos.jpg",
+          "allergies": ["dairy", "gluten"]
         },
         {
           "id": "mozzarella_sticks",
           "name": "Mozzarella Sticks",
           "description": "Golden fried mozzarella sticks served with marinara sauce",
           "price": 8.99,
-          "image": "/mozzarella.jpg"
+          "image": "/mozzarella.jpg",
+          "allergies": ["dairy", "gluten"]
         }
       ]
     },
@@ -41,21 +44,24 @@
           "name": "FatCat Burger",
           "description": "Juicy beef patty with lettuce, tomato, onion, and our special sauce",
           "price": 15.99,
-          "image": "/burger.jpg"
+          "image": "/burger.jpg",
+          "allergies": ["meat", "dairy", "gluten", "eggs"]
         },
         {
           "id": "pasta",
           "name": "Creamy Alfredo Pasta",
           "description": "Fettuccine pasta in a rich and creamy alfredo sauce",
           "price": 13.99,
-          "image": "/pasta.jpg"
+          "image": "/pasta.jpg",
+          "allergies": ["dairy", "gluten", "eggs"]
         },
         {
           "id": "steak",
           "name": "Ribeye Steak",
           "description": "12oz ribeye steak grilled to perfection",
           "price": 28.99,
-          "image": "/steak.jpg"
+          "image": "/steak.jpg",
+          "allergies": ["meat"]
         }
       ]
     },
@@ -68,14 +74,16 @@
           "name": "New York Cheesecake",
           "description": "Rich and creamy cheesecake with graham cracker crust",
           "price": 7.99,
-          "image": "/cheesecake.jpg"
+          "image": "/cheesecake.jpg",
+          "allergies": ["dairy", "eggs", "gluten"]
         },
         {
           "id": "ice_cream",
           "name": "Premium Ice Cream",
           "description": "Three scoops of premium ice cream",
           "price": 5.99,
-          "image": "/ice_cream.jpg"
+          "image": "/ice_cream.jpg",
+          "allergies": ["dairy"]
         }
       ]
     },
@@ -88,14 +96,16 @@
           "name": "Soft Drinks",
           "description": "Refreshing carbonated beverages",
           "price": 2.99,
-          "image": "/soda.jpg"
+          "image": "/soda.jpg",
+          "allergies": []
         },
         {
           "id": "coffee",
           "name": "Fresh Brewed Coffee",
           "description": "Premium coffee beans, freshly brewed",
           "price": 3.49,
-          "image": "/coffee.jpg"
+          "image": "/coffee.jpg",
+          "allergies": []
         }
       ]
     }

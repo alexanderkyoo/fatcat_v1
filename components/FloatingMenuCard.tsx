@@ -13,6 +13,7 @@ export interface MenuItem {
   description: string;
   price: number;
   image?: string;
+  allergies?: string[];
 }
 
 export interface FloatingCard {
@@ -103,7 +104,6 @@ function FloatingMenuCard({ card, onRemove, index }: FloatingMenuCardProps) {
         {/* Header with close button */}
         <div className="flex items-center justify-between p-3 border-b border-orange-100/50">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
             <span className="text-xs font-medium text-orange-600">
               {card.category || "Menu Item"}
             </span>
@@ -132,6 +132,20 @@ function FloatingMenuCard({ card, onRemove, index }: FloatingMenuCardProps) {
             <p className="text-sm text-gray-600 leading-relaxed">
               {card.item.description}
             </p>
+            
+            {/* Allergy indicators */}
+            {card.item.allergies && card.item.allergies.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {card.item.allergies.map((allergy) => (
+                  <span
+                    key={allergy}
+                    className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full font-medium"
+                  >
+                    {allergy}
+                  </span>
+                ))}
+              </div>
+            )}
             
             {/* Price and add button */}
             <div className="flex items-center justify-between pt-2">
@@ -174,24 +188,26 @@ interface FloatingMenuCardsProps {
   viewportWidth?: number;
 }
 
-// Simple list-based positioning system
-const calculateListPositions = (cardCount: number, containerWidth: number, containerHeight: number) => {
+// Simple list-based positioning system with dynamic sizing
+const calculateListPositions = (
+  cardCount: number, 
+  containerWidth: number, 
+  containerHeight: number, 
+  cardSize: number, 
+  spacing: number
+) => {
   const positions: { x: number; y: number }[] = [];
   
   if (cardCount === 0) return positions;
   
-  const isMobile = containerWidth < 640;
-  const cardHeight = isMobile ? 150 : 180; // 1.5x bigger height
-  const spacing = isMobile ? 12 : 16;
-  
-  // Single card - center it
+  // Single card - center horizontally, top-align vertically 
   if (cardCount === 1) {
-    positions.push({ x: 0, y: 0 });
+    positions.push({ x: 0, y: 0 }); // y: 0 will be adjusted by topOffset in parent
     return positions;
   }
   
   // Multiple cards - stack them horizontally like a list, perfectly centered
-  const cardWidth = isMobile ? 128 : 144; // 1.5x bigger cards (w-32/w-36)
+  const cardWidth = cardSize; // Use dynamic card size
   const totalWidth = (cardCount * cardWidth) + ((cardCount - 1) * spacing);
   
   // Start from the left edge of the centered group
@@ -200,7 +216,7 @@ const calculateListPositions = (cardCount: number, containerWidth: number, conta
   for (let i = 0; i < cardCount; i++) {
     positions.push({
       x: startX + (i * (cardWidth + spacing)) + (cardWidth / 2),
-      y: 0 // Always center vertically
+      y: 0 // Will be top-aligned by topOffset in parent
     });
   }
   
@@ -252,36 +268,49 @@ export default function FloatingMenuCards({
     };
   }, []);
   
-  // Calculate effective viewport dimensions based on resize position
+  // Calculate the dedicated floating cards space (from below controls to resize bar)
+  const controlsHeight = isMobile ? 100 : 80;
   const topSectionPixelHeight = (viewportHeight * topSectionHeight) / 100;
-  const resizeBarHeight = 8; // Height of resize bar
-  const controlsHeight = isMobile ? 100 : 80; // Controls area height
-  
-  // Available space for cards in the top section (avoiding controls and resize bar)
-  const availableCardHeight = topSectionPixelHeight - controlsHeight - resizeBarHeight - 20; // 20px buffer
+  const availableCardHeight = topSectionPixelHeight - controlsHeight - 40; // Subtract controls + padding
   const availableCardWidth = viewportWidth - (isMobile ? 32 : 64); // Side padding
   
-  // Calculate positions using simple list layout
+  // Calculate dynamic card size based on the dedicated space
+  const minCardSize = isMobile ? 100 : 120; // Increased minimum card size
+  const maxCardSize = isMobile ? 200 : 240; // Increased maximum card size for 80% usage
+  const optimalCardSize = Math.min(maxCardSize, Math.max(minCardSize, availableCardHeight * 0.8)); // 80% of available height
+  
+  // Dynamic spacing based on card size
+  const dynamicSpacing = Math.max(8, optimalCardSize * 0.1);
+  
+  // Calculate positions using simple list layout with dynamic sizing
   const rawPositions = calculateListPositions(
     cards.length, 
     Math.max(320, availableCardWidth), 
-    Math.max(200, availableCardHeight)
+    Math.max(200, availableCardHeight),
+    optimalCardSize,
+    dynamicSpacing
   );
   
-  // Center the cards perfectly in the available space
+  // Position cards at top of the dedicated floating cards space
+  const containerHeight = availableCardHeight + 40; // Add back the padding we subtracted
+  const topOffset = -containerHeight / 2 + optimalCardSize / 2 + 20; // Top of dedicated space + margin
   const positions = rawPositions.map((pos: { x: number; y: number }) => ({
     x: pos.x,
-    y: pos.y // Keep cards perfectly centered vertically
+    y: pos.y + topOffset // Top-aligned within dedicated floating cards space
   }));
   
   return (
     <div 
-      className="absolute inset-0 pointer-events-none z-10 overflow-x-auto overflow-y-hidden" 
+      className="absolute inset-0 pointer-events-none z-20 overflow-x-auto overflow-y-hidden" 
       data-floating-cards-container
       style={{
-        // Dynamic padding based on viewport and resize position
-        paddingTop: `${controlsHeight / 2}px`, // Half controls height as top buffer
-        paddingBottom: `${resizeBarHeight + 10}px`, // Resize bar height + buffer
+        // Span from below controls to bottom of top section
+        top: `${isMobile ? 100 : 80}px`, // Controls height
+        bottom: '0px',
+        left: '0px', 
+        right: '0px',
+        paddingTop: '20px',
+        paddingBottom: '20px', 
         paddingLeft: isMobile ? '16px' : '32px',
         paddingRight: isMobile ? '16px' : '32px',
       }}
@@ -295,6 +324,7 @@ export default function FloatingMenuCards({
                 onRemove={onRemoveCard}
                 index={index}
                 position={positions[index] || { x: 0, y: 0 }}
+                cardSize={optimalCardSize}
               />
             </div>
           ))}
@@ -309,12 +339,14 @@ function FloatingMenuCardWithPosition({
   card, 
   onRemove, 
   index, 
-  position 
+  position,
+  cardSize
 }: {
   card: FloatingCard;
   onRemove: (id: string) => void;
   index: number;
   position: { x: number; y: number };
+  cardSize: number;
 }) {
   const { addItem } = useCart();
   const [isRemoving, setIsRemoving] = useState(false);
@@ -367,51 +399,82 @@ function FloatingMenuCardWithPosition({
         damping: 20,
         delay: index * 0.15 
       }}
-      className="absolute z-50 w-32 sm:w-36"
+      className="absolute z-50"
       style={{
+        width: `${cardSize}px`,
+        height: `${cardSize}px`,
         left: '50%',
         top: '50%',
         transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
         maxHeight: 'calc(100vh - 8rem)', // Prevent overflow on mobile
       }}
     >
+      {/* + Button positioned freely outside all card constraints */}
+      <Button
+        onClick={handleAddToCart}
+        className="absolute -top-4 -right-4 w-10 h-10 p-0 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center z-20 border-2 border-white"
+        style={{ pointerEvents: 'auto' }}
+      >
+        <Plus className="w-5 h-5" />
+      </Button>
+
+      {/* Simplified card with single clean border */}
       <motion.div
-        className="bg-white/95 backdrop-blur-md border border-orange-200/50 rounded-xl shadow-lg shadow-orange-100/50 overflow-hidden relative"
+        className="bg-white rounded-xl shadow-lg overflow-hidden relative w-full h-full border border-gray-200"
         whileHover={{ scale: 1.05, y: -2 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        {/* Compact content */}
-        <div className="p-2">
+        {/* Card content */}
+        <div className="p-3 flex flex-col h-full">
           {/* Item image */}
-          <div className="w-full h-20 sm:h-24 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg mb-2 flex items-center justify-center relative">
-            <span className="text-lg">🍽️</span>
-            {/* Add button overlay */}
-            <Button
-              onClick={handleAddToCart}
-              className="absolute -top-1 -right-1 w-6 h-6 p-0 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-full shadow-md flex items-center justify-center"
-            >
-              <Plus className="w-3 h-3" />
-            </Button>
+          <div 
+            className="w-full bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden flex-shrink-0"
+            style={{ height: `${cardSize * 0.55}px` }} // Reduced image height to make room for title
+          >
+            {card.item.image ? (
+              <img 
+                src={card.item.image} 
+                alt={card.item.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to emoji if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<span class="text-lg">🍽️</span>' + parent.innerHTML.replace(/<img[^>]*>/, '');
+                  }
+                }}
+              />
+            ) : (
+              <span className="text-lg">🍽️</span>
+            )}
           </div>
 
-          {/* Item name */}
-          <h3 className="text-sm font-medium text-gray-900 text-center leading-tight line-clamp-2">
+          {/* Item name - prominently displayed */}
+          <h3 className="text-sm font-bold text-gray-900 text-center leading-tight mb-2 min-h-[2.5rem] flex items-center justify-center">
             {card.item.name}
           </h3>
+          
+          {/* Allergy indicators */}
+          {card.item.allergies && card.item.allergies.length > 0 && (
+            <div className="flex flex-wrap gap-1 justify-center mt-auto">
+              {card.item.allergies.slice(0, 2).map((allergy) => (
+                <span
+                  key={allergy}
+                  className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full font-medium"
+                >
+                  {allergy}
+                </span>
+              ))}
+              {card.item.allergies.length > 2 && (
+                <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full font-medium">
+                  +{card.item.allergies.length - 2}
+                </span>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* Animated border */}
-        <motion.div
-          className="absolute inset-0 rounded-2xl border-2 border-orange-300/30 pointer-events-none"
-          animate={{
-            borderColor: [
-              "rgba(251, 146, 60, 0.3)",
-              "rgba(239, 68, 68, 0.3)",
-              "rgba(251, 146, 60, 0.3)"
-            ]
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        />
       </motion.div>
     </motion.div>
   );

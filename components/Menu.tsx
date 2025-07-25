@@ -13,6 +13,7 @@ interface MenuItem {
   description: string;
   price: number;
   image: string;
+  allergies?: string[];
 }
 
 interface Category {
@@ -116,9 +117,23 @@ export default function Menu() {
                       </div>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
                       {item.description}
                     </p>
+                    
+                    {/* Allergy indicators */}
+                    {item.allergies && item.allergies.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {item.allergies.map((allergy) => (
+                          <span
+                            key={allergy}
+                            className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full font-medium"
+                          >
+                            {allergy}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">

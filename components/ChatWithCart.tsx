@@ -65,7 +65,7 @@ function ChatContent({
 }) {
   const { status } = useVoice();
   const { addItem, removeItem, clearCart, items, updateQuantity, refreshCart } = useCart();
-  const [topSectionHeight, setTopSectionHeight] = useState(55); // Default 55% to weight more towards menu
+  const [topSectionHeight, setTopSectionHeight] = useState(70); // Default 70% to show suggestions clearly
   const [showCart, setShowCart] = useState(false); // Show menu by default
   const [floatingCards, setFloatingCards] = useState<FloatingCard[]>([]);
   const [viewport, setViewport] = useState({ 
@@ -198,7 +198,8 @@ function ChatContent({
               name: result.data.item.name,
               description: result.data.item.description,
               price: result.data.item.price,
-              image: result.data.item.image
+              image: result.data.item.image,
+              allergies: result.data.item.allergies
             };
             addFloatingCard(menuItem, result.data.category);
             console.log('🎴 Created floating card for item:', menuItem.name);
@@ -215,7 +216,8 @@ function ChatContent({
                 name: item.name,
                 description: item.description,
                 price: item.price,
-                image: item.image
+                image: item.image,
+                allergies: item.allergies
               };
               // Stagger the card creation
               setTimeout(() => {
@@ -223,6 +225,41 @@ function ChatContent({
               }, index * 300);
             });
             console.log('🎴 Created floating cards for category:', categoryName, 'items:', items.length);
+          }
+          
+          // Create cards for allergy filtering (when excludeAllergies is specified but no specific category/item)
+          else if (parsedParameters.excludeAllergies && result.data.fullMenu && result.data.fullMenu.categories) {
+            const allFilteredItems: any[] = [];
+            
+            // Collect all filtered items from all categories
+            result.data.fullMenu.categories.forEach((category: any) => {
+              if (category.items && Array.isArray(category.items)) {
+                category.items.forEach((item: any) => {
+                  allFilteredItems.push({
+                    ...item,
+                    categoryName: category.name
+                  });
+                });
+              }
+            });
+            
+            // Create floating cards for filtered items (limit to first 6 to avoid overwhelming)
+            const itemsToShow = allFilteredItems.slice(0, 6);
+            itemsToShow.forEach((item: any, index: number) => {
+              const menuItem: MenuItem = {
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                image: item.image,
+                allergies: item.allergies
+              };
+              // Stagger the card creation
+              setTimeout(() => {
+                addFloatingCard(menuItem, item.categoryName);
+              }, index * 300);
+            });
+            console.log('🎴 Created floating cards for allergy filtering:', parsedParameters.excludeAllergies, 'items:', itemsToShow.length);
           }
         }
         // Handle cart operations - just show feedback and refresh
@@ -268,7 +305,7 @@ function ChatContent({
         <div className="flex flex-col w-full h-full min-h-screen min-h-[100dvh] overflow-hidden">
           {/* Top section - Controls and Suggestions */}
           <motion.div 
-            className="flex flex-col overflow-hidden bg-gradient-to-br from-white via-orange-50/30 to-red-50/30"
+            className="flex flex-col overflow-hidden bg-gradient-to-br from-white via-orange-50/30 to-red-50/30 relative"
             style={{ 
               height: `${topSectionHeight}%`, 
               minHeight: '200px',
@@ -285,15 +322,16 @@ function ChatContent({
             {/* Suggestions area */}
             <div className="flex-1 p-2 sm:p-4 overflow-auto relative">
               <SuggestedMessages />
-              {/* Floating Menu Cards - responsive to viewport dimensions */}
-              <FloatingMenuCards 
-                cards={floatingCards} 
-                onRemoveCard={removeFloatingCard}
-                topSectionHeight={topSectionHeight}
-                viewportHeight={viewport.height}
-                viewportWidth={viewport.width}
-              />
             </div>
+            
+            {/* Dedicated Floating Cards Layer - spans full top section */}
+            <FloatingMenuCards 
+              cards={floatingCards} 
+              onRemoveCard={removeFloatingCard}
+              topSectionHeight={topSectionHeight}
+              viewportHeight={viewport.height}
+              viewportWidth={viewport.width}
+            />
           </motion.div>
 
           {/* Resizable bar */}

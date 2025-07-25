@@ -124,42 +124,7 @@ export default function ResizableBar({ onResize }: ResizableBarProps) {
 
 
 
-      {/* Subtle animated dots for visual interest */}
-      <div className="absolute left-4 flex gap-1">
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="w-1 h-1 bg-orange-400 rounded-full"
-            animate={{
-              opacity: [0.3, 0.8, 0.3],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: i * 0.2
-            }}
-          />
-        ))}
-      </div>
 
-      <div className="absolute right-4 flex gap-1">
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="w-1 h-1 bg-red-400 rounded-full"
-            animate={{
-              opacity: [0.3, 0.8, 0.3],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: i * 0.2 + 1
-            }}
-          />
-        ))}
-      </div>
     </motion.div>
   );
 }

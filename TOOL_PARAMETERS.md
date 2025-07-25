@@ -6,7 +6,7 @@ This document provides the technical tool definitions that should be configured 
 
 ### 1. get_menu
 
-**Description:** Retrieves menu information
+**Description:** Retrieves menu information with optional filtering by category and allergies
 
 **Parameters Schema:**
 ```json
@@ -20,6 +20,13 @@ This document provides the technical tool definitions that should be configured 
     "itemName": {
       "type": "string", 
       "description": "Optional: Search for a specific menu item by name"
+    },
+    "excludeAllergies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional: Array of allergies to exclude from results. Common allergies include: meat, dairy, gluten, eggs, nuts, shellfish, soy, vegan (excludes all animal products)"
     }
   },
   "required": []
@@ -30,6 +37,9 @@ This document provides the technical tool definitions that should be configured 
 - `{}` - Get full menu
 - `{"category": "appetizers"}` - Get appetizers only
 - `{"itemName": "buffalo wings"}` - Search for specific item
+- `{"excludeAllergies": ["meat", "dairy"]}` - Get menu excluding items with meat or dairy
+- `{"category": "mains", "excludeAllergies": ["gluten"]}` - Get main courses without gluten
+- `{"excludeAllergies": ["vegan"]}` - Get menu excluding vegan items (shows only items with animal products)
 
 ### 2. get_cart
 

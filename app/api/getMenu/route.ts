@@ -10,6 +10,23 @@ export async function POST(request: NextRequest) {
     const menuPath = path.join(process.cwd(), 'data', 'menu.json');
     const menuData = JSON.parse(fs.readFileSync(menuPath, 'utf8'));
     
+    // Helper function to filter items by allergies
+    const filterByAllergies = (items: any[], excludeAllergies: string[]) => {
+      if (!excludeAllergies || excludeAllergies.length === 0) {
+        return items;
+      }
+      
+      return items.filter(item => {
+        const itemAllergies = item.allergies || [];
+        // Check if any of the item's allergies match the excluded allergies
+        return !excludeAllergies.some(allergy => 
+          itemAllergies.some((itemAllergy: string) => 
+            itemAllergy.toLowerCase() === allergy.toLowerCase()
+          )
+        );
+      });
+    };
+    
     // If a specific category is requested, filter by category
     if (parameters?.category) {
       const category = parameters.category.toLowerCase();
@@ -18,12 +35,20 @@ export async function POST(request: NextRequest) {
       );
       
       if (categoryData) {
+        // Apply allergy filtering if specified
+        const filteredItems = filterByAllergies(categoryData.items, parameters?.excludeAllergies || []);
+        
+        let message = `Here are the ${categoryData.name} items available at FatCat Bistro`;
+        if (parameters?.excludeAllergies && parameters.excludeAllergies.length > 0) {
+          message += ` (filtered to exclude: ${parameters.excludeAllergies.join(', ')})`;
+        }
+        
         return NextResponse.json({
           success: true,
           data: {
             category: categoryData.name,
-            items: categoryData.items,
-            message: `Here are the ${categoryData.name} items available at FatCat Bistro`
+            items: filteredItems,
+            message: message
           }
         });
       } else {
@@ -74,20 +99,35 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Return all menu data with summary
+    // Return all menu data with summary (apply allergy filtering if specified)
+    let filteredMenuData = { ...menuData };
+    
+    if (parameters?.excludeAllergies && parameters.excludeAllergies.length > 0) {
+      filteredMenuData.categories = menuData.categories.map((cat: any) => ({
+        ...cat,
+        items: filterByAllergies(cat.items, parameters.excludeAllergies)
+      }));
+    }
+    
     const summary = {
-      restaurantName: menuData.restaurant.name,
-      description: menuData.restaurant.description,
-      categories: menuData.categories.map((cat: any) => cat.name),
-      totalItems: menuData.categories.reduce((total: number, cat: any) => total + cat.items.length, 0)
+      restaurantName: filteredMenuData.restaurant.name,
+      description: filteredMenuData.restaurant.description,
+      categories: filteredMenuData.categories.map((cat: any) => cat.name),
+      totalItems: filteredMenuData.categories.reduce((total: number, cat: any) => total + cat.items.length, 0)
     };
+    
+    let message = `Welcome to ${summary.restaurantName}! ${summary.description} We have ${summary.totalItems} items across ${summary.categories.length} categories: ${summary.categories.join(', ')}`;
+    
+    if (parameters?.excludeAllergies && parameters.excludeAllergies.length > 0) {
+      message += ` (filtered to exclude: ${parameters.excludeAllergies.join(', ')})`;
+    }
     
     return NextResponse.json({
       success: true,
       data: {
         summary,
-        fullMenu: menuData,
-        message: `Welcome to ${summary.restaurantName}! ${summary.description} We have ${summary.totalItems} items across ${summary.categories.length} categories: ${summary.categories.join(', ')}`
+        fullMenu: filteredMenuData,
+        message: message
       }
     });
     

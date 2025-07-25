@@ -78,32 +78,7 @@ export default function SuggestedMessages() {
           <div className="absolute bottom-10 right-10 w-24 h-24 bg-red-300 rounded-full blur-2xl" />
         </div>
         
-        {/* Floating elements for visual interest */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-2 h-2 bg-orange-300 rounded-full opacity-30"
-          animate={{ 
-            y: [0, -20, 0],
-            opacity: [0.3, 0.6, 0.3] 
-          }}
-          transition={{ 
-            duration: 3, 
-            repeat: Infinity,
-            ease: "easeInOut" 
-          }}
-        />
-        <motion.div
-          className="absolute top-3/4 right-1/3 w-3 h-3 bg-red-300 rounded-full opacity-20"
-          animate={{ 
-            y: [0, -15, 0],
-            opacity: [0.2, 0.5, 0.2] 
-          }}
-          transition={{ 
-            duration: 4, 
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1 
-          }}
-        />
+
       </div>
     );
   }
