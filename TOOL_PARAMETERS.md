@@ -119,10 +119,48 @@ This document provides the technical tool definitions that should be configured 
 - `{"itemId": "wings", "quantity": 1}` - Remove 1 buffalo wings
 - `{"itemName": "buffalo wings"}` - Remove buffalo wings by name
 
+### 5. notify_waiter
+
+**Description:** Sends an SMS notification to the waiter for customer assistance requests
+
+**Parameters Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Optional: Custom message to send to the waiter. If not provided, a default message will be used."
+    },
+    "urgency": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "Optional: Priority level of the request (default: medium). Affects message formatting and urgency indicators."
+    },
+    "customerInfo": {
+      "type": "string",
+      "description": "Optional: Additional customer information to include in the notification (e.g., table number, special needs, etc.)"
+    }
+  },
+  "required": []
+}
+```
+
+**Example Calls:**
+- `{}` - Send default assistance message with medium priority
+- `{"message": "Customer needs help with menu selection"}` - Send custom message
+- `{"message": "Customer has food allergy concern", "urgency": "high"}` - Send urgent message
+- `{"message": "Ready for check", "urgency": "low", "customerInfo": "Table 5"}` - Send with customer info
+- `{"urgency": "high", "customerInfo": "Wheelchair accessible table needed"}` - Urgent request with customer details
+
 ## Environment Variables Required
 
 ```
 HUME_API_KEY=your_hume_api_key
 HUME_SECRET_KEY=your_hume_secret_key
 NEXT_PUBLIC_HUME_CONFIG_ID=your_hume_config_id
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_MESSAGING_SERVICE_SID=your_twilio_messaging_service_sid
+DEMO_TO_NUMBER=your_waiter_phone_number
 ```
