@@ -70,7 +70,7 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
             {/* Notify Waiter button in corner */}
             <Button
               variant="secondary"
-              className="absolute top-6 right-6 z-20 h-12 px-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg"
+              className="absolute top-6 right-6 z-20 h-12 px-4 bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 hover:from-orange-600 hover:via-orange-700 hover:to-red-600 text-white border-0 shadow-lg"
               onClick={() => setIsWaiterModalOpen(true)}
             >
               <MessageSquare className="w-4 h-4 mr-2" />

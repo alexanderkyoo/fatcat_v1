@@ -39,11 +39,15 @@ function WaiterModalContent({ isOpen, onClose, accessToken }: NotifyWaiterModalP
     }
   }, [status.value, isOpen, hasBeenConnected, onClose]);
 
-  // Reset state when modal opens
+  // Reset state when modal opens and auto-start call
   useEffect(() => {
     if (isOpen) {
       setHasBeenConnected(false);
       setIsConnecting(false);
+      // Auto-start the call when modal opens
+      setTimeout(() => {
+        handleStartCall();
+      }, 500); // Small delay for smooth animation
     }
   }, [isOpen]);
 
@@ -105,33 +109,33 @@ function WaiterModalContent({ isOpen, onClose, accessToken }: NotifyWaiterModalP
 
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <MessageSquare className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Notify Waiter</h2>
-            <p className="text-gray-600 text-sm">
-              {status.value === "connected" 
-                ? "Speak your request clearly" 
-                : "Tap to start and tell us what you need"}
-            </p>
+            {status.value !== "connected" && (
+              <p className="text-gray-600 text-sm">Connecting...</p>
+            )}
           </div>
 
           {/* Call interface */}
           <div className="space-y-4">
             {status.value !== "connected" ? (
-              <Button
-                className="w-full h-16 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl text-lg font-semibold"
-                onClick={handleStartCall}
-                disabled={isConnecting}
-              >
-                {isConnecting ? "Connecting..." : "Start Request"}
-              </Button>
+              <div className="space-y-4">
+                {/* Connecting state */}
+                <div className="h-24 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 border-3 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-orange-600 font-medium">Connecting...</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="space-y-4">
                 {/* Mic visualization */}
-                <div className="h-24 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 flex items-center justify-center">
+                <div className="h-24 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 flex items-center justify-center">
                   <div className="w-full h-full">
-                    <MicFFT fft={micFft} className="fill-blue-500" />
+                    <MicFFT fft={micFft} className="fill-orange-500" />
                   </div>
                 </div>
                 
@@ -146,7 +150,7 @@ function WaiterModalContent({ isOpen, onClose, accessToken }: NotifyWaiterModalP
                 {/* End call button */}
                 <Button
                   variant="destructive"
-                  className="w-full h-12"
+                  className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                   onClick={handleClose}
                 >
                   End Request
@@ -155,12 +159,6 @@ function WaiterModalContent({ isOpen, onClose, accessToken }: NotifyWaiterModalP
             )}
           </div>
 
-          {/* Instructions */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-            <p className="text-xs text-gray-600 text-center">
-              Examples: "I need a fork", "Can I get some napkins?", "Ready for the check"
-            </p>
-          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
