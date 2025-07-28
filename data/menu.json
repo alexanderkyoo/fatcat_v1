@@ -1,6 +1,6 @@
 {
   "restaurant": {
-    "name": "FatCat Bistro",
+    "name": "Remy Bistro",
     "description": "Delicious comfort food with a modern twist",
     "image": "/restaurant-hero.jpg"
   },
@@ -41,7 +41,7 @@
       "items": [
         {
           "id": "burger",
-          "name": "FatCat Burger",
+          "name": "Remy Burger",
           "description": "Juicy beef patty with lettuce, tomato, onion, and our special sauce",
           "price": 15.99,
           "image": "/burger.jpg",

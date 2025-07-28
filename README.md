@@ -1,17 +1,17 @@
 <div align="center">
   <img src="https://storage.googleapis.com/hume-public-logos/hume/hume-banner.png">
-  <h1>EVI Next.js App Router Example</h1>
+  <h1>Remy Voice Assistant</h1>
 </div>
 
 ![preview.png](preview.png)
 
 ## Overview
 
-This project features a sample implementation of Hume's [Empathic Voice Interface](https://hume.docs.buildwithfern.com/docs/empathic-voice-interface-evi/overview) using Hume's React SDK. Here, we have a simple EVI that uses the Next.js App Router.
+Remy is a voice-powered restaurant ordering assistant built with Hume's [Empathic Voice Interface](https://hume.docs.buildwithfern.com/docs/empathic-voice-interface-evi/overview). Customers can naturally speak to order food, ask about menu items, and manage their cart using conversational AI.
 
 ## Project deployment
 
-Click the button below to deploy this example project with Vercel:
+Click the button below to deploy Remy with Vercel:
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhumeai%2Fhume-evi-next-js-starter&env=HUME_API_KEY,HUME_SECRET_KEY)
 
@@ -22,4 +22,4 @@ Below are the steps to completing deployment:
 
 ## Support
 
-If you have questions, require assistance, or wish to engage in discussions pertaining to this starter template, [please reach out to us on Discord](https://link.hume.ai/discord).
+If you have questions, require assistance, or wish to engage in discussions pertaining to Remy, [please reach out to us on Discord](https://link.hume.ai/discord).

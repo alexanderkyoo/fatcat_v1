@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         // Apply allergy filtering if specified
         const filteredItems = filterByAllergies(categoryData.items, parameters?.excludeAllergies || []);
         
-        let message = `Here are the ${categoryData.name} items available at FatCat Bistro`;
+        let message = `Here are the ${categoryData.name} items available at Remy Bistro`;
         if (parameters?.excludeAllergies && parameters.excludeAllergies.length > 0) {
           message += ` (filtered to exclude: ${parameters.excludeAllergies.join(', ')})`;
         }

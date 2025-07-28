@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/contexts/CartContext";
 
 export const metadata: Metadata = {
-  title: "Chili's FatCat",
-  description: "FatCat Chili's Voice Assistant",
+  title: "Remy Voice Assistant",
+  description: "Remy - Your Voice Ordering Assistant",
   viewport: {
     width: 'device-width',
     initialScale: 1,
