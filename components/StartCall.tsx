@@ -10,10 +10,11 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
   const { status, connect } = useVoice();
   const [isClicked, setIsClicked] = useState(false);
   const [isWaiterModalOpen, setIsWaiterModalOpen] = useState(false);
+  const configId = process.env.NEXT_PUBLIC_HUME_CONFIG_ID?.trim();
 
   const EVI_CONNECT_OPTIONS: ConnectOptions = {
     auth: { type: "accessToken", value: accessToken },
-    configId: process.env.NEXT_PUBLIC_HUME_CONFIG_ID,
+    configId,
   };
 
   // Reset immediately when call connects (screen transitions) and when call ends
@@ -28,6 +29,13 @@ export default function StartCall({ accessToken }: { accessToken: string }) {
   }, [status.value]);
 
   const handleClick = () => {
+    if (!configId) {
+      toast.error("Missing voice config", {
+        description: "NEXT_PUBLIC_HUME_CONFIG_ID is not set",
+      });
+      return;
+    }
+
     // Immediately trigger transition without waiting for connection
     setIsClicked(true);
     

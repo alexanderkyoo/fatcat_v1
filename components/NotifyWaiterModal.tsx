@@ -19,10 +19,11 @@ function WaiterModalContent({ isOpen, onClose, accessToken }: NotifyWaiterModalP
   const { status, connect, disconnect, micFft } = useVoice();
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasBeenConnected, setHasBeenConnected] = useState(false);
+  const waiterConfigId = process.env.NEXT_PUBLIC_HUME_CONFIG_ID_WAITER?.trim();
 
   const EVI_WAITER_CONNECT_OPTIONS: ConnectOptions = {
     auth: { type: "accessToken", value: accessToken },
-    configId: process.env.NEXT_PUBLIC_HUME_CONFIG_ID_WAITER,
+    configId: waiterConfigId,
   };
 
   // Handle connection status changes
@@ -59,6 +60,13 @@ function WaiterModalContent({ isOpen, onClose, accessToken }: NotifyWaiterModalP
   }, [isOpen, status.value, disconnect]);
 
   const handleStartCall = () => {
+    if (!waiterConfigId) {
+      toast.error("Missing waiter voice config", {
+        description: "NEXT_PUBLIC_HUME_CONFIG_ID_WAITER is not set",
+      });
+      return;
+    }
+
     setIsConnecting(true);
     
     connect(EVI_WAITER_CONNECT_OPTIONS)
